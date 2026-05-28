@@ -8,7 +8,6 @@ import { Flame, Clock, Truck, ShieldCheck, ArrowRight, Star } from 'lucide-react
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PlaceHolderImages } from '@/lib/placeholder-images'
-import { TasteTool } from '@/components/ai/TasteTool'
 
 const categories = [
   { name: 'Asun', image: 'asun-special', count: '12 items' },
@@ -118,24 +117,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* AI Taste Tool Section */}
-      <section className="py-24 px-4 glass relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-[120px] -mr-48 -mt-48" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/10 rounded-full blur-[120px] -ml-48 -mb-48" />
-        
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-16">
-            <Badge className="bg-primary/20 text-primary border-primary/30 mb-4 px-4 py-1 uppercase tracking-widest font-bold">Introducing AI Flavor Sommelier</Badge>
-            <h2 className="text-4xl md:text-6xl font-headline font-bold mb-6">Find Your Jiggy Soulmate</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-              Not sure what to order? Our 'Jiggy' AI Taste Tool helps you pair the perfect BBQ with your mood.
-            </p>
-          </div>
-          
-          <TasteTool />
-        </div>
-      </section>
-
       {/* Why Jiggy Section */}
       <section className="py-24 px-4 bg-deep-charcoal">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
@@ -228,8 +209,6 @@ export default function Home() {
           </Button>
         </div>
       </section>
-
-      {/* Footer is missing from here but would normally be in layout. I'll add a simplified one or assume it's in layout */}
     </div>
   )
 }
