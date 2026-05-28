@@ -1,3 +1,235 @@
+
+"use client"
+
+import Image from 'next/image'
+import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { Flame, Clock, Truck, ShieldCheck, ArrowRight, Star } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { PlaceHolderImages } from '@/lib/placeholder-images'
+import { TasteTool } from '@/components/ai/TasteTool'
+
+const categories = [
+  { name: 'Asun', image: 'asun-special', count: '12 items' },
+  { name: 'Grilled Chicken', image: 'bbq-chicken', count: '8 items' },
+  { name: 'Catfish BBQ', image: 'catfish-bbq', count: '5 items' },
+  { name: 'Beef BBQ', image: 'beef-bbq', count: '7 items' },
+]
+
+const stats = [
+  { label: 'Happy Customers', value: '15k+' },
+  { label: 'Grill Sessions', value: '250k' },
+  { label: 'Lagos Locations', value: '3' },
+  { label: 'Avg Delivery Time', value: '35m' },
+]
+
 export default function Home() {
-  return <></>;
+  const heroImage = PlaceHolderImages.find(img => img.id === 'hero-bg')
+
+  return (
+    <div className="overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative h-screen min-h-[700px] flex items-center justify-center">
+        <div className="absolute inset-0">
+          <Image
+            src={heroImage?.imageUrl || ''}
+            alt="Premium Barbecue"
+            fill
+            className="object-cover brightness-[0.4]"
+            priority
+            data-ai-hint="luxury barbecue"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background" />
+        </div>
+
+        <div className="relative z-10 text-center max-w-4xl px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <Badge className="mb-6 bg-primary/20 text-primary border-primary/30 px-4 py-1.5 rounded-full font-bold animate-pulse">
+              <Clock className="w-4 h-4 mr-2" />
+              OPEN 24 HOURS • DELIVERY & DRIVE-THROUGH
+            </Badge>
+            <h1 className="text-5xl md:text-8xl font-headline font-bold mb-6 tracking-tight">
+              Lagos’ Premium <br />
+              <span className="text-gradient">BBQ Experience</span>
+            </h1>
+            <p className="text-lg md:text-xl text-warm-cream/80 mb-10 max-w-2xl mx-auto leading-relaxed">
+              Experience the smoky soul of Alimosho. Hand-rubbed, slow-grilled, and served with true Lagos swagger.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90 text-white h-14 px-10 text-lg font-bold shadow-xl shadow-primary/20 w-full sm:w-auto">
+                <Link href="/menu">Order Now</Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="rounded-full glass border-white/20 h-14 px-10 text-lg font-bold w-full sm:w-auto">
+                <Link href="/menu">Explore Menu</Link>
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce hidden md:block">
+          <div className="w-1 h-12 rounded-full bg-gradient-to-b from-primary to-transparent" />
+        </div>
+      </section>
+
+      {/* Featured Categories */}
+      <section className="py-24 px-4 bg-background">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-end justify-between mb-12">
+            <div>
+              <p className="text-primary font-bold tracking-widest uppercase mb-2">Our Specialties</p>
+              <h2 className="text-4xl md:text-5xl font-headline font-bold">The Grill List</h2>
+            </div>
+            <Link href="/menu" className="hidden md:flex items-center text-primary font-bold group">
+              View All Menu <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+            {categories.map((cat, idx) => (
+              <motion.div
+                key={cat.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                viewport={{ once: true }}
+                className="group cursor-pointer"
+              >
+                <div className="relative aspect-[3/4] rounded-3xl overflow-hidden mb-4">
+                  <Image
+                    src={PlaceHolderImages.find(i => i.id === cat.image)?.imageUrl || ''}
+                    alt={cat.name}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                  <div className="absolute bottom-6 left-6">
+                    <h3 className="text-xl font-bold mb-1">{cat.name}</h3>
+                    <p className="text-xs text-white/60">{cat.count}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* AI Taste Tool Section */}
+      <section className="py-24 px-4 glass relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-[120px] -mr-48 -mt-48" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/10 rounded-full blur-[120px] -ml-48 -mb-48" />
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center mb-16">
+            <Badge className="bg-primary/20 text-primary border-primary/30 mb-4 px-4 py-1 uppercase tracking-widest font-bold">Introducing AI Flavor Sommelier</Badge>
+            <h2 className="text-4xl md:text-6xl font-headline font-bold mb-6">Find Your Jiggy Soulmate</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+              Not sure what to order? Our 'Jiggy' AI Taste Tool helps you pair the perfect BBQ with your mood.
+            </p>
+          </div>
+          
+          <TasteTool />
+        </div>
+      </section>
+
+      {/* Why Jiggy Section */}
+      <section className="py-24 px-4 bg-deep-charcoal">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+          <div className="relative aspect-square rounded-[3rem] overflow-hidden">
+            <Image
+              src={PlaceHolderImages.find(i => i.id === 'vibe-1')?.imageUrl || ''}
+              alt="Jiggy Lounge"
+              fill
+              className="object-cover"
+            />
+            <div className="absolute inset-0 border-[1.5rem] border-background/20 rounded-[3rem]" />
+          </div>
+
+          <div>
+            <h2 className="text-4xl md:text-6xl font-headline font-bold mb-8">Why Lagos Loves <br /><span className="text-primary italic">Jiggy Grills</span></h2>
+            
+            <div className="space-y-8">
+              {[
+                { icon: ShieldCheck, title: "Premium Quality Meat", desc: "We source only the finest cuts, hand-picked daily for maximum tenderness." },
+                { icon: Flame, title: "The Signature Jiggy Rub", desc: "Our secret spice blend inspired by traditional Yoruba hearth cooking." },
+                { icon: Truck, title: "Lagos Lightning Delivery", desc: "From our grill to your door in Alimosho and beyond in record time." }
+              ].map((item, i) => (
+                <div key={i} className="flex gap-6">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                    <item.icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold mb-2">{item.title}</h4>
+                    <p className="text-muted-foreground leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Counter */}
+      <section className="py-16 px-4 bg-background">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          {stats.map((stat, i) => (
+            <div key={i}>
+              <div className="text-4xl md:text-5xl font-bold text-primary mb-2 font-headline">{stat.value}</div>
+              <div className="text-sm uppercase tracking-widest text-muted-foreground font-bold">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-24 px-4 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+             <h2 className="text-4xl md:text-5xl font-headline font-bold">What The Streets Say</h2>
+          </div>
+          
+          <div className="flex flex-nowrap gap-6 animate-marquee">
+             {[
+               { name: "Tunde Ednut", role: "Lagos Foodie", comment: "The Asun is legendary. Best I've had in Alimosho area, hands down!" },
+               { name: "Seyi Shay", role: "Artist", comment: "Jiggy Grills is the perfect late-night vibe. Their Catfish is 10/10." },
+               { name: "Davido", role: "Customer", comment: "E choke! Best BBQ in the city. No cap." },
+               { name: "Chioma", role: "Chef", comment: "The spice level is perfect. Truly premium quality." }
+             ].map((review, i) => (
+               <div key={i} className="glass-card p-8 rounded-[2.5rem] min-w-[300px] md:min-w-[400px]">
+                 <div className="flex text-accent mb-4">
+                   {[...Array(5)].map((_, j) => <Star key={j} className="w-4 h-4 fill-current" />)}
+                 </div>
+                 <p className="text-lg italic mb-6">"{review.comment}"</p>
+                 <div className="flex items-center gap-4">
+                   <div className="w-10 h-10 rounded-full bg-primary/20" />
+                   <div>
+                     <p className="font-bold">{review.name}</p>
+                     <p className="text-xs text-muted-foreground">{review.role}</p>
+                   </div>
+                 </div>
+               </div>
+             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="py-24 px-4">
+        <div className="max-w-5xl mx-auto glass rounded-[3rem] p-12 md:p-24 text-center relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full bg-primary/5 opacity-50" />
+          <h2 className="text-4xl md:text-7xl font-headline font-bold mb-8 relative z-10">Hungry? <br />Let's get <span className="text-primary italic">Jiggy!</span></h2>
+          <p className="text-xl text-muted-foreground mb-12 relative z-10 max-w-xl mx-auto">Join the premium grill movement. Order now and get it delivered in under 45 minutes.</p>
+          <Button size="lg" className="rounded-full bg-primary hover:bg-primary/90 text-white h-16 px-12 text-xl font-bold relative z-10">
+            ORDER FOR DELIVERY NOW
+          </Button>
+        </div>
+      </section>
+
+      {/* Footer is missing from here but would normally be in layout. I'll add a simplified one or assume it's in layout */}
+    </div>
+  )
 }
