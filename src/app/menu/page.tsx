@@ -5,7 +5,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ShoppingCart, Flame, Star, Plus, Minus, Heart } from 'lucide-react'
+import { Search, ShoppingCart, Flame, Star, Plus, Minus, Heart, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -44,9 +44,9 @@ export default function MenuPage() {
         <div className="sticky top-20 z-30 mb-12 space-y-6">
           <div className="max-w-2xl mx-auto relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
-            <Input 
+            <input 
               placeholder="Search for Asun, Chicken, Catfish..."
-              className="h-14 pl-12 rounded-full glass border-white/10 text-lg shadow-2xl focus:ring-primary"
+              className="h-14 w-full pl-12 pr-4 rounded-full glass border-white/10 text-lg shadow-2xl focus:ring-primary outline-none focus:border-primary/50"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
