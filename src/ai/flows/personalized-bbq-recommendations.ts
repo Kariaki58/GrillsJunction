@@ -59,7 +59,7 @@ const prompt = ai.definePrompt({
 ` +
     `Consider the following specialties from Jiggy Grills & Asun:
 ` +
-    `- Asun
+    `- Asun (Spicy grilled goat meat)
 ` +
     `- BBQ Chicken
 ` +
