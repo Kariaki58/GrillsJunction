@@ -5,9 +5,8 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ShoppingCart, Flame, Star, Plus, Minus, Heart, ArrowRight } from 'lucide-react'
+import { Search, ShoppingCart, Flame, Star, Plus, ArrowRight, Utensils } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { PlaceHolderImages } from '@/lib/placeholder-images'
 
@@ -40,8 +39,8 @@ export default function MenuPage() {
           <p className="text-muted-foreground max-w-xl mx-auto">Explore our premium selection of fire-grilled delicacies, prepared fresh in Alimosho, Lagos.</p>
         </header>
 
-        {/* Search and Filters */}
-        <div className="sticky top-20 z-30 mb-12 space-y-6">
+        {/* Search and Filters - No longer sticky, will "stroll along" with scroll */}
+        <div className="mb-12 space-y-6">
           <div className="max-w-2xl mx-auto relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <input 
@@ -69,7 +68,7 @@ export default function MenuPage() {
           </div>
         </div>
 
-        {/* Menu Grid */}
+        {/* Menu Grid - Items are no longer clickable */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           <AnimatePresence mode="popLayout">
             {filteredItems.map((item) => (
@@ -81,57 +80,50 @@ export default function MenuPage() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 className="group relative"
               >
-                <Link href={`/menu/${item.id}`}>
-                  <div className="glass-card rounded-[2rem] overflow-hidden flex flex-col h-full hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-white/5 group-hover:border-primary/20">
-                    <div className="relative aspect-[4/3] overflow-hidden">
-                      <Image
-                        src={PlaceHolderImages.find(i => i.id === item.image)?.imageUrl || ''}
-                        alt={item.name}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                      <div className="absolute top-4 right-4 flex flex-col gap-2">
-                        <button className="p-2 glass rounded-full hover:bg-white/20 transition-colors">
-                          <Heart className="w-5 h-5" />
-                        </button>
+                <div className="glass-card rounded-[2rem] overflow-hidden flex flex-col h-full shadow-lg border-white/5 group-hover:border-primary/20 transition-all duration-500">
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <Image
+                      src={PlaceHolderImages.find(i => i.id === item.image)?.imageUrl || ''}
+                      alt={item.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    {item.badge && (
+                      <div className="absolute top-4 left-4">
+                        <Badge className="bg-primary text-white border-none px-3 py-1 font-bold">
+                          {item.badge}
+                        </Badge>
                       </div>
-                      {item.badge && (
-                        <div className="absolute top-4 left-4">
-                          <Badge className="bg-primary text-white border-none px-3 py-1 font-bold">
-                            {item.badge}
-                          </Badge>
-                        </div>
-                      )}
-                      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-                         <div className="glass px-3 py-1 rounded-full flex items-center gap-1">
-                            <Star className="w-3 h-3 text-secondary fill-current" />
-                            <span className="text-xs font-bold">{item.rating}</span>
-                         </div>
-                         <div className="glass px-3 py-1 rounded-full flex items-center gap-1">
-                            <Flame className="w-3 h-3 text-primary" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest">Hot & Spicy</span>
-                         </div>
-                      </div>
-                    </div>
-
-                    <div className="p-6 flex-1 flex flex-col">
-                      <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">{item.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-6 line-clamp-2">
-                        {item.desc}
-                      </p>
-                      
-                      <div className="mt-auto flex items-center justify-between">
-                        <div>
-                          <span className="text-xs text-muted-foreground block font-bold uppercase">Price</span>
-                          <span className="text-2xl font-bold">₦{item.price.toLocaleString()}</span>
-                        </div>
-                        <Button className="w-12 h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white p-0 shadow-lg shadow-primary/20">
-                          <Plus className="w-6 h-6" />
-                        </Button>
-                      </div>
+                    )}
+                    <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+                       <div className="glass px-3 py-1 rounded-full flex items-center gap-1">
+                          <Star className="w-3 h-3 text-secondary fill-current" />
+                          <span className="text-xs font-bold">{item.rating}</span>
+                       </div>
+                       <div className="glass px-3 py-1 rounded-full flex items-center gap-1">
+                          <Flame className="w-3 h-3 text-primary" />
+                          <span className="text-[10px] font-bold uppercase tracking-widest">Hot & Spicy</span>
+                       </div>
                     </div>
                   </div>
-                </Link>
+
+                  <div className="p-6 flex-1 flex flex-col">
+                    <h3 className="text-2xl font-bold mb-2 transition-colors">{item.name}</h3>
+                    <p className="text-sm text-muted-foreground mb-6 line-clamp-2">
+                      {item.desc}
+                    </p>
+                    
+                    <div className="mt-auto flex items-center justify-between">
+                      <div>
+                        <span className="text-xs text-muted-foreground block font-bold uppercase">Price</span>
+                        <span className="text-2xl font-bold">₦{item.price.toLocaleString()}</span>
+                      </div>
+                      <Button className="w-12 h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white p-0 shadow-lg shadow-primary/20">
+                        <Plus className="w-6 h-6" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </AnimatePresence>
@@ -172,26 +164,5 @@ export default function MenuPage() {
         </Link>
       </div>
     </div>
-  )
-}
-
-function Utensils(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
-      <path d="M7 2v20" />
-      <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
-    </svg>
   )
 }

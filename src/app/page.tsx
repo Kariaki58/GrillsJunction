@@ -96,7 +96,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
                 viewport={{ once: true }}
-                className="group cursor-pointer"
+                className="group"
               >
                 <div className="relative aspect-[3/4] rounded-3xl overflow-hidden mb-4">
                   <Image
@@ -204,8 +204,8 @@ export default function Home() {
           <div className="absolute top-0 left-0 w-full h-full bg-primary/5 opacity-50" />
           <h2 className="text-4xl md:text-7xl font-headline font-bold mb-8 relative z-10">Hungry? <br />Let's get <span className="text-primary italic">Jiggy!</span></h2>
           <p className="text-xl text-muted-foreground mb-12 relative z-10 max-w-xl mx-auto">Join the premium grill movement. Order now and get it delivered in under 45 minutes.</p>
-          <Button size="lg" className="rounded-full bg-primary hover:bg-primary/90 text-white h-16 px-12 text-xl font-bold relative z-10">
-            ORDER FOR DELIVERY NOW
+          <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90 text-white h-16 px-12 text-xl font-bold relative z-10">
+            <Link href="/menu">ORDER FOR DELIVERY NOW</Link>
           </Button>
         </div>
       </section>
