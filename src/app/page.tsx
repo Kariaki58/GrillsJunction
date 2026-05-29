@@ -8,13 +8,7 @@ import { Flame, Clock, Truck, ShieldCheck, ArrowRight, Star } from 'lucide-react
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PlaceHolderImages } from '@/lib/placeholder-images'
-
-const categories = [
-  { name: 'Asun', image: 'asun-special', count: '12 items' },
-  { name: 'Grilled Chicken', image: 'bbq-chicken', count: '8 items' },
-  { name: 'Catfish BBQ', image: 'catfish-bbq', count: '5 items' },
-  { name: 'Beef BBQ', image: 'beef-bbq', count: '7 items' },
-]
+import { featuredCategories, getCategoryItemCount } from '@/lib/menu'
 
 const stats = [
   { label: 'Happy Customers', value: '15k+' },
@@ -35,7 +29,7 @@ export default function Home() {
             src={heroImage?.imageUrl || ''}
             alt="Premium Barbecue"
             fill
-            className="object-cover brightness-[0.4]"
+            className="object-cover brightness-[0.55]"
             priority
             data-ai-hint="luxury barbecue"
           />
@@ -52,18 +46,18 @@ export default function Home() {
               <Clock className="w-4 h-4 mr-2" />
               OPEN 24 HOURS • DELIVERY & DRIVE-THROUGH
             </Badge>
-            <h1 className="text-5xl md:text-8xl font-headline font-bold mb-6 tracking-tight">
+            <h1 className="text-5xl md:text-8xl font-headline font-bold mb-6 tracking-tight text-white">
               Lagos’ Premium <br />
               <span className="text-gradient">BBQ Experience</span>
             </h1>
-            <p className="text-lg md:text-xl text-warm-cream/80 mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
               Experience the smoky soul of Alimosho. Hand-rubbed, slow-grilled, and served with true Lagos swagger.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90 text-white h-14 px-10 text-lg font-bold shadow-xl shadow-primary/20 w-full sm:w-auto">
                 <Link href="/menu">Order Now</Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="rounded-full glass border-white/20 h-14 px-10 text-lg font-bold w-full sm:w-auto">
+              <Button asChild variant="outline" size="lg" className="rounded-full border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white h-14 px-10 text-lg font-bold w-full sm:w-auto backdrop-blur-sm">
                 <Link href="/menu">Explore Menu</Link>
               </Button>
             </div>
@@ -89,41 +83,50 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-            {categories.map((cat, idx) => (
-              <motion.div
-                key={cat.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                className="group"
-              >
-                <div className="relative aspect-[3/4] rounded-3xl overflow-hidden mb-4">
-                  <Image
-                    src={PlaceHolderImages.find(i => i.id === cat.image)?.imageUrl || ''}
-                    alt={cat.name}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
-                  <div className="absolute bottom-6 left-6">
-                    <h3 className="text-xl font-bold mb-1">{cat.name}</h3>
-                    <p className="text-xs text-white/60">{cat.count}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+            {featuredCategories.map((cat, idx) => {
+              const count = getCategoryItemCount(cat.menuCategory);
+              return (
+                <motion.div
+                  key={cat.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Link
+                    href={`/menu?category=${encodeURIComponent(cat.menuCategory)}`}
+                    className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-3xl"
+                  >
+                    <div className="relative aspect-[3/4] rounded-3xl overflow-hidden mb-4">
+                      <Image
+                        src={PlaceHolderImages.find(i => i.id === cat.image)?.imageUrl || ''}
+                        alt={cat.name}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                      <div className="absolute bottom-6 left-6">
+                        <h3 className="text-xl font-bold mb-1 text-white">{cat.name}</h3>
+                        <p className="text-xs text-white/60">
+                          {count} {count === 1 ? 'item' : 'items'}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Why Jiggy Section */}
-      <section className="py-24 px-4 bg-deep-charcoal">
+      {/* Why grillsJunction Section */}
+      <section className="py-24 px-4 bg-muted/50">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div className="relative aspect-square rounded-[3rem] overflow-hidden">
             <Image
               src={PlaceHolderImages.find(i => i.id === 'vibe-1')?.imageUrl || ''}
-              alt="Jiggy Lounge"
+              alt="grillsJunction lounge"
               fill
               className="object-cover"
             />
@@ -131,12 +134,12 @@ export default function Home() {
           </div>
 
           <div>
-            <h2 className="text-4xl md:text-6xl font-headline font-bold mb-8">Why Lagos Loves <br /><span className="text-primary italic">Jiggy Grills</span></h2>
+            <h2 className="text-4xl md:text-6xl font-headline font-bold mb-8">Why Lagos Loves <br /><span className="text-primary font-body not-italic">grillsJunction</span></h2>
             
             <div className="space-y-8">
               {[
                 { icon: ShieldCheck, title: "Premium Quality Meat", desc: "We source only the finest cuts, hand-picked daily for maximum tenderness." },
-                { icon: Flame, title: "The Signature Jiggy Rub", desc: "Our secret spice blend inspired by traditional Yoruba hearth cooking." },
+                { icon: Flame, title: "The Signature Junction Rub", desc: "Our secret spice blend inspired by traditional Yoruba hearth cooking." },
                 { icon: Truck, title: "Lagos Lightning Delivery", desc: "From our grill to your door in Alimosho and beyond in record time." }
               ].map((item, i) => (
                 <div key={i} className="flex gap-6">
@@ -176,7 +179,7 @@ export default function Home() {
           <div className="flex flex-nowrap gap-6 animate-marquee">
              {[
                { name: "Tunde Ednut", role: "Lagos Foodie", comment: "The Asun is legendary. Best I've had in Alimosho area, hands down!" },
-               { name: "Seyi Shay", role: "Artist", comment: "Jiggy Grills is the perfect late-night vibe. Their Catfish is 10/10." },
+               { name: "Seyi Shay", role: "Artist", comment: "grillsJunction is the perfect late-night vibe. Their Catfish is 10/10." },
                { name: "Davido", role: "Customer", comment: "E choke! Best BBQ in the city. No cap." },
                { name: "Chioma", role: "Chef", comment: "The spice level is perfect. Truly premium quality." }
              ].map((review, i) => (
@@ -202,7 +205,7 @@ export default function Home() {
       <section className="py-24 px-4">
         <div className="max-w-5xl mx-auto glass rounded-[3rem] p-12 md:p-24 text-center relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full bg-primary/5 opacity-50" />
-          <h2 className="text-4xl md:text-7xl font-headline font-bold mb-8 relative z-10">Hungry? <br />Let's get <span className="text-primary italic">Jiggy!</span></h2>
+          <h2 className="text-4xl md:text-7xl font-headline font-bold mb-8 relative z-10">Hungry? <br />Order from <span className="text-primary font-body not-italic">grillsJunction</span></h2>
           <p className="text-xl text-muted-foreground mb-12 relative z-10 max-w-xl mx-auto">Join the premium grill movement. Order now and get it delivered in under 45 minutes.</p>
           <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90 text-white h-16 px-12 text-xl font-bold relative z-10">
             <Link href="/menu">ORDER FOR DELIVERY NOW</Link>

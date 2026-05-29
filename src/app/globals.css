@@ -5,24 +5,24 @@
 
 @layer base {
   :root {
-    --background: 20 10% 4%;
-    --foreground: 40 50% 98%;
-    --card: 20 10% 8%;
-    --card-foreground: 40 50% 98%;
-    --popover: 20 10% 6%;
-    --popover-foreground: 40 50% 98%;
+    --background: 40 33% 98%;
+    --foreground: 20 18% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 18% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 18% 14%;
     --primary: 25 100% 50%;
-    --primary-foreground: 40 50% 98%;
-    --secondary: 45 100% 48%;
-    --secondary-foreground: 20 10% 4%;
-    --muted: 20 10% 15%;
-    --muted-foreground: 40 10% 70%;
-    --accent: 45 100% 48%;
-    --accent-foreground: 20 10% 4%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 42 85% 92%;
+    --secondary-foreground: 25 60% 28%;
+    --muted: 35 25% 94%;
+    --muted-foreground: 20 10% 42%;
+    --accent: 42 90% 55%;
+    --accent-foreground: 20 18% 14%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 40 50% 98%;
-    --border: 20 10% 20%;
-    --input: 20 10% 20%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 18% 88%;
+    --input: 30 18% 88%;
     --ring: 25 100% 50%;
     --radius: 1.5rem;
   }
@@ -34,32 +34,36 @@
   }
   body {
     @apply bg-background text-foreground font-body;
-    background-image: radial-gradient(circle at 50% 50%, rgba(255, 107, 0, 0.05) 0%, transparent 100%);
+    background-image: radial-gradient(
+      circle at 50% 0%,
+      rgba(255, 107, 0, 0.08) 0%,
+      transparent 55%
+    );
     background-attachment: fixed;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-headline;
+    @apply font-headline text-foreground;
   }
 }
 
 .glass {
-  @apply bg-background/60 backdrop-blur-xl border border-white/10;
+  @apply bg-white/85 backdrop-blur-xl border border-border shadow-md;
 }
 
 .glass-card {
-  @apply bg-card/80 backdrop-blur-md border border-white/5;
+  @apply bg-card backdrop-blur-sm border border-border shadow-sm;
 }
 
 .text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#FF6B00] to-[#F4B400];
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#FF6B00] to-[#D4920A];
 }
 
 ::-webkit-scrollbar {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  @apply bg-background;
+  @apply bg-muted;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-primary/30 rounded-full;
+  @apply bg-primary/40 rounded-full;
 }

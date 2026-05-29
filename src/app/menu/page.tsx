@@ -1,65 +1,98 @@
+'use client';
 
-"use client"
+import { Suspense, useEffect, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, ShoppingCart, Flame, Star, Plus, ArrowRight, Utensils } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { menuItems, menuCategories, isMenuCategory } from '@/lib/menu';
+import { useCart } from '@/context/cart-context';
+import { formatNaira } from '@/lib/format';
+import { useToast } from '@/hooks/use-toast';
 
-import { useState } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ShoppingCart, Flame, Star, Plus, ArrowRight, Utensils } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { PlaceHolderImages } from '@/lib/placeholder-images'
+function MenuContent() {
+  const searchParams = useSearchParams();
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const { addItem, itemCount, subtotal } = useCart();
+  const { toast } = useToast();
 
-const menuItems = [
-  { id: 1, name: 'Special Lagos Asun', category: 'Asun', price: 4500, rating: 4.9, desc: 'Fiery goat meat, hand-cut and slow grilled with scotch bonnets.', image: 'asun-special', badge: 'Best Seller' },
-  { id: 2, name: 'Flame BBQ Chicken', category: 'Chicken', price: 6500, rating: 4.8, desc: 'Half chicken marinated in Jiggy spices for 24 hours.', image: 'bbq-chicken', badge: 'Popular' },
-  { id: 3, name: 'Premium Grilled Catfish', category: 'Fish', price: 8500, rating: 5.0, desc: 'Whole point-and-kill catfish, expertly seasoned.', image: 'catfish-bbq', badge: 'Fresh' },
-  { id: 4, name: 'Suya Spiced Beef BBQ', category: 'Beef', price: 5500, rating: 4.7, desc: 'Tender beef chunks with yaji spice and grilled onions.', image: 'beef-bbq', badge: null },
-  { id: 5, name: 'Jiggy Turkey Wings', category: 'Turkey', price: 4800, rating: 4.6, desc: 'Massive turkey wings, grilled till crispy and golden.', image: 'turkey-bbq', badge: null },
-  { id: 6, name: 'Spicy Goat Chops', category: 'Asun', price: 7000, rating: 4.8, desc: 'Thick cut goat chops grilled over wood fire.', image: 'asun-special', badge: 'New' },
-]
+  useEffect(() => {
+    const category = searchParams.get('category');
+    if (category && isMenuCategory(category) && category !== 'All') {
+      setActiveCategory(category);
+    }
+  }, [searchParams]);
 
-const categories = ['All', 'Asun', 'Chicken', 'Fish', 'Beef', 'Turkey', 'Drinks']
+  const filteredItems = menuItems.filter((item) => {
+    const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
-export default function MenuPage() {
-  const [activeCategory, setActiveCategory] = useState('All')
-  const [searchQuery, setSearchQuery] = useState('')
+  const handleAddToCart = (item: (typeof menuItems)[0]) => {
+    addItem({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+    });
+    toast({
+      title: 'Added to cart',
+      description: `${item.name} — ${formatNaira(item.price)}`,
+    });
+  };
 
-  const filteredItems = menuItems.filter(item => {
-    const matchesCategory = activeCategory === 'All' || item.category === activeCategory
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
+  const handleCategoryChange = (cat: string) => {
+    setActiveCategory(cat);
+    const url = new URL(window.location.href);
+    if (cat === 'All') {
+      url.searchParams.delete('category');
+    } else {
+      url.searchParams.set('category', cat);
+    }
+    window.history.replaceState({}, '', url.toString());
+  };
 
   return (
-    <div className="pt-24 md:pt-32 pb-24 px-4 min-h-screen">
+    <div className="md:pt-32 pb-24 px-4 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <header className="mb-12 text-center">
-          <h1 className="text-4xl md:text-6xl font-headline font-bold mb-4">The Jiggy Menu</h1>
-          <p className="text-muted-foreground max-w-xl mx-auto">Explore our premium selection of fire-grilled delicacies, prepared fresh in Alimosho, Lagos.</p>
+          <h1 className="text-4xl md:text-6xl font-headline font-bold mb-4">
+            The <span className="font-body not-italic">grillsJunction</span> Menu
+          </h1>
+          <p className="text-muted-foreground max-w-xl mx-auto">
+            {activeCategory === 'All'
+              ? 'Explore our premium selection of fire-grilled delicacies, prepared fresh in Alimosho, Lagos.'
+              : `Showing ${activeCategory} — hand-grilled and ready to order.`}
+          </p>
         </header>
 
-        {/* Search and Filters - No longer sticky, will "stroll along" with scroll */}
         <div className="mb-12 space-y-6">
           <div className="max-w-2xl mx-auto relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
-            <input 
+            <input
               placeholder="Search for Asun, Chicken, Catfish..."
-              className="h-14 w-full pl-12 pr-4 rounded-full glass border-white/10 text-lg shadow-2xl focus:ring-primary outline-none focus:border-primary/50"
+              className="h-14 w-full pl-12 pr-4 rounded-full glass border-border text-lg shadow-2xl focus:ring-primary outline-none focus:border-primary/50"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar justify-center">
-            {categories.map((cat) => (
+            {menuCategories.map((cat) => (
               <button
                 key={cat}
-                onClick={() => setActiveCategory(cat)}
+                type="button"
+                onClick={() => handleCategoryChange(cat)}
                 className={`px-6 py-2 rounded-full whitespace-nowrap transition-all duration-300 font-bold border ${
-                  activeCategory === cat 
-                  ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
-                  : "bg-white/5 text-muted-foreground border-white/5 hover:bg-white/10 hover:text-white"
+                  activeCategory === cat
+                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                    : 'bg-muted text-muted-foreground border-border hover:bg-muted hover:text-foreground'
                 }`}
               >
                 {cat}
@@ -68,7 +101,6 @@ export default function MenuPage() {
           </div>
         </div>
 
-        {/* Menu Grid - Items are no longer clickable */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           <AnimatePresence mode="popLayout">
             {filteredItems.map((item) => (
@@ -80,10 +112,10 @@ export default function MenuPage() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 className="group relative"
               >
-                <div className="glass-card rounded-[2rem] overflow-hidden flex flex-col h-full shadow-lg border-white/5 group-hover:border-primary/20 transition-all duration-500">
+                <div className="glass-card rounded-[2rem] overflow-hidden flex flex-col h-full shadow-lg border-border group-hover:border-primary/20 transition-all duration-500">
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <Image
-                      src={PlaceHolderImages.find(i => i.id === item.image)?.imageUrl || ''}
+                      src={PlaceHolderImages.find((i) => i.id === item.image)?.imageUrl || ''}
                       alt={item.name}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-700"
@@ -96,29 +128,36 @@ export default function MenuPage() {
                       </div>
                     )}
                     <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-                       <div className="glass px-3 py-1 rounded-full flex items-center gap-1">
-                          <Star className="w-3 h-3 text-secondary fill-current" />
-                          <span className="text-xs font-bold">{item.rating}</span>
-                       </div>
-                       <div className="glass px-3 py-1 rounded-full flex items-center gap-1">
-                          <Flame className="w-3 h-3 text-primary" />
-                          <span className="text-[10px] font-bold uppercase tracking-widest">Hot & Spicy</span>
-                       </div>
+                      <div className="glass px-3 py-1 rounded-full flex items-center gap-1">
+                        <Star className="w-3 h-3 text-secondary fill-current" />
+                        <span className="text-xs font-bold">{item.rating}</span>
+                      </div>
+                      <div className="glass px-3 py-1 rounded-full flex items-center gap-1">
+                        <Flame className="w-3 h-3 text-primary" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">
+                          Hot & Spicy
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                   <div className="p-6 flex-1 flex flex-col">
                     <h3 className="text-2xl font-bold mb-2 transition-colors">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-6 line-clamp-2">
-                      {item.desc}
-                    </p>
-                    
+                    <p className="text-sm text-muted-foreground mb-6 line-clamp-2">{item.desc}</p>
+
                     <div className="mt-auto flex items-center justify-between">
                       <div>
-                        <span className="text-xs text-muted-foreground block font-bold uppercase">Price</span>
-                        <span className="text-2xl font-bold">₦{item.price.toLocaleString()}</span>
+                        <span className="text-xs text-muted-foreground block font-bold uppercase">
+                          Price
+                        </span>
+                        <span className="text-2xl font-bold">{formatNaira(item.price)}</span>
                       </div>
-                      <Button className="w-12 h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white p-0 shadow-lg shadow-primary/20">
+                      <Button
+                        type="button"
+                        onClick={() => handleAddToCart(item)}
+                        className="w-12 h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white p-0 shadow-lg shadow-primary/20"
+                        aria-label={`Add ${item.name} to cart`}
+                      >
                         <Plus className="w-6 h-6" />
                       </Button>
                     </div>
@@ -129,7 +168,6 @@ export default function MenuPage() {
           </AnimatePresence>
         </div>
 
-        {/* Empty State */}
         {filteredItems.length === 0 && (
           <div className="text-center py-20">
             <Utensils className="w-16 h-16 text-muted-foreground/20 mx-auto mb-4" />
@@ -139,30 +177,47 @@ export default function MenuPage() {
         )}
       </div>
 
-      {/* Floating Cart for Mobile */}
-      <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 md:hidden w-[90%] pointer-events-none">
-        <Link href="/cart" className="pointer-events-auto">
-          <motion.div 
-            initial={{ y: 100 }}
-            animate={{ y: 0 }}
-            className="glass h-16 rounded-3xl flex items-center justify-between px-6 shadow-2xl bg-primary border-none text-white"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6" />
+      {itemCount > 0 && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 md:hidden w-[90%] pointer-events-none">
+          <Link href="/cart" className="pointer-events-auto">
+            <motion.div
+              initial={{ y: 100 }}
+              animate={{ y: 0 }}
+              className="glass h-16 rounded-3xl flex items-center justify-between px-6 shadow-2xl bg-primary border-none text-white"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                  <ShoppingCart className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold opacity-80">
+                    {itemCount} {itemCount === 1 ? 'ITEM' : 'ITEMS'}
+                  </p>
+                  <p className="font-bold">{formatNaira(subtotal)}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-bold opacity-80">3 ITEMS</p>
-                <p className="font-bold">₦19,500.00</p>
+              <div className="flex items-center gap-2">
+                <span className="font-bold">View Cart</span>
+                <ArrowRight className="w-5 h-5" />
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold">View Cart</span>
-              <ArrowRight className="w-5 h-5" />
-            </div>
-          </motion.div>
-        </Link>
-      </div>
+            </motion.div>
+          </Link>
+        </div>
+      )}
     </div>
-  )
+  );
+}
+
+export default function MenuPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="md:pt-32 pb-24 px-4 min-h-screen flex items-center justify-center text-muted-foreground">
+          Loading menu...
+        </div>
+      }
+    >
+      <MenuContent />
+    </Suspense>
+  );
 }

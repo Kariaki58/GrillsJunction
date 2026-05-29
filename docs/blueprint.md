@@ -1,9 +1,9 @@
-# **App Name**: Jiggy Grills & Asun
+# **App Name**: grillsJunction
 
 ## Core Features:
 
 - Cinematic Menu Navigator: A high-performance interactive menu with category filters for Asun, Grilled Proteins, and sides, featuring smooth Framer Motion transitions and touch-friendly food cards.
-- The 'Jiggy' AI Taste Tool: An AI-powered tool that acts as a flavor sommelier, using reasoning to recommend specific BBQ pairings and spice levels based on the user's past selections or current cravings.
+- The grillsJunction AI Taste Tool: An AI-powered tool that acts as a flavor sommelier, using reasoning to recommend specific BBQ pairings and spice levels based on the user's past selections or current cravings.
 - Luxury Mobile Checkout: A streamlined mobile-app checkout experience with floating action buttons, promo code integration, and a glassmorphic delivery cost calculator.
 - Real-time Order Status Simulation: A cinematic delivery progress interface that visually tracks 'Order Confirmed', 'On the Grill', and 'Out for Delivery' with rich animation counters.
 - Lagos Lounge Visual Hub: A narrative-driven section including a women-owned business spotlight and an Instagram-style food gallery designed for visual impact.

@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview An AI-powered tool that acts as a flavor sommelier for Jiggy Grills & Asun.
+ * @fileOverview An AI-powered tool that acts as a flavor sommelier for grillsJunction.
  *
  * - personalizedBBQRecommendations - A function that recommends personalized BBQ pairings and spice levels.
  * - PersonalizedBBQRecommendationsInput - The input type for the personalizedBBQRecommendations function.
@@ -27,9 +27,9 @@ export type PersonalizedBBQRecommendationsInput = z.infer<
 const PersonalizedBBQRecommendationsOutputSchema = z.object({
   recommendedMeal: z
     .string()
-    .describe('The name of the recommended BBQ dish from Jiggy Grills & Asun.'),
+    .describe('The name of the recommended BBQ dish from grillsJunction.'),
   recommendedSpiceLevel: z
-    .enum(['Mild', 'Medium', 'Hot', 'Jiggy Spicy'])
+    .enum(['Mild', 'Medium', 'Hot', 'Junction Spicy'])
     .describe('The recommended spice level for the dish.'),
   pairingSuggestion: z
     .string()
@@ -53,11 +53,11 @@ const prompt = ai.definePrompt({
   input: {schema: PersonalizedBBQRecommendationsInputSchema},
   output: {schema: PersonalizedBBQRecommendationsOutputSchema},
   prompt:
-    `You are the 'Jiggy' AI Taste Tool, a flavor sommelier for 'Jiggy Grills & Asun', a premium Lagos-based barbecue restaurant. ` +
+    `You are the grillsJunction AI Taste Tool, a flavor sommelier for grillsJunction, a premium Lagos-based barbecue restaurant. ` +
     `Your task is to recommend a personalized BBQ pairing, including a main dish, a spice level, and a drink or side pairing, based on the user's provided information.
 
 ` +
-    `Consider the following specialties from Jiggy Grills & Asun:
+    `Consider the following specialties from grillsJunction:
 ` +
     `- Asun (Spicy grilled goat meat)
 ` +
@@ -76,7 +76,7 @@ const prompt = ai.definePrompt({
 ` +
     `Based on the user's order history and current cravings, provide a tailored recommendation.
 ` +
-    `If no specific information is provided, make a general recommendation that embodies the "Jiggy" vibe of Lagos luxury.
+    `If no specific information is provided, make a general recommendation that embodies the grillsJunction vibe of Lagos luxury.
 
 ` +
     `Order History: {{#each orderHistory}}{{{this}}}, {{/each}}

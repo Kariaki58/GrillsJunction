@@ -32,7 +32,7 @@ export function TasteTool() {
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <Card className="glass-card p-6 md:p-10 rounded-[2.5rem] border-white/10 shadow-2xl">
+      <Card className="glass-card p-6 md:p-10 rounded-[2.5rem] shadow-2xl">
         <div className="grid md:grid-cols-2 gap-10">
           <div className="space-y-6">
             <div className="flex items-center gap-3 mb-2">
@@ -47,7 +47,7 @@ export function TasteTool() {
             <div className="relative">
               <Textarea
                 placeholder="Type your cravings here..."
-                className="min-h-[150px] bg-white/5 border-white/10 rounded-2xl p-4 text-lg focus:ring-primary"
+                className="min-h-[150px] bg-background border-input rounded-2xl p-4 text-lg focus:ring-primary"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
               />
@@ -96,14 +96,14 @@ export function TasteTool() {
                     </p>
                     
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                      <div className="bg-muted rounded-2xl p-4 border border-border">
                         <div className="flex items-center gap-2 mb-1">
                           <GlassWater className="w-4 h-4 text-secondary" />
                           <span className="text-[10px] font-bold text-muted-foreground uppercase">Perfect Pairing</span>
                         </div>
                         <p className="text-xs font-bold">{recommendation.pairingSuggestion}</p>
                       </div>
-                      <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                      <div className="bg-muted rounded-2xl p-4 border border-border">
                         <div className="flex items-center gap-2 mb-1">
                           <Flame className="w-4 h-4 text-primary" />
                           <span className="text-[10px] font-bold text-muted-foreground uppercase">Heat Level</span>
@@ -123,7 +123,7 @@ export function TasteTool() {
                   animate={{ opacity: 1 }}
                   className="text-center text-muted-foreground flex flex-col items-center"
                 >
-                  <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4 border border-white/10">
+                  <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4 border border-border">
                     <Utensils className="w-8 h-8 opacity-20" />
                   </div>
                   <p>Your personalized BBQ journey <br />starts with a craving.</p>
