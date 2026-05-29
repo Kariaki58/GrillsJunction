@@ -52,7 +52,7 @@ function TrackContent() {
   };
 
   return (
-    <div className="md:pt-32 pb-24 px-4 min-h-screen">
+    <div className="pt-28 md:pt-32 pb-24 px-4 min-h-screen">
       <div className="max-w-3xl mx-auto">
         <header className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-headline font-bold mb-4">Track Order</h1>
@@ -170,7 +170,7 @@ function TrackContent() {
 
 export default function TrackOrderPage() {
   return (
-    <Suspense fallback={<div className="pt-32 text-center text-muted-foreground">Loading...</div>}>
+    <Suspense fallback={<div className="pt-28 text-center text-muted-foreground">Loading...</div>}>
       <TrackContent />
     </Suspense>
   );

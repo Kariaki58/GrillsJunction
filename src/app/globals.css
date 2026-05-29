@@ -50,6 +50,11 @@
   @apply bg-white/85 backdrop-blur-xl border border-border shadow-md;
 }
 
+/* Darker glass variant for headers to reduce shine on mobile/desktop */
+.glass-dark {
+  @apply bg-white/60 backdrop-blur-xl border border-border shadow-md;
+}
+
 .glass-card {
   @apply bg-card backdrop-blur-sm border border-border shadow-sm;
 }

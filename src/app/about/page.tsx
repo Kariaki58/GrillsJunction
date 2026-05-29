@@ -7,8 +7,8 @@ import { Heart, ShieldCheck, Flame, Users, ChefHat, Award } from 'lucide-react'
 import { PlaceHolderImages } from '@/lib/placeholder-images'
 
 export default function AboutPage() {
-  return (
-    <div className="md:pt-32 pb-24 px-4 overflow-hidden">
+   return (
+      <div className="pt-28 md:pt-32 pb-24 px-4 overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* Story Section */}
         <section className="grid lg:grid-cols-2 gap-16 items-center mb-32">

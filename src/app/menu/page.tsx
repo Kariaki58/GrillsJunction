@@ -59,7 +59,7 @@ function MenuContent() {
   };
 
   return (
-    <div className="md:pt-32 pb-24 px-4 min-h-screen">
+    <div className="pt-28 md:pt-32 pb-24 px-4 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <header className="mb-12 text-center">
           <h1 className="text-4xl md:text-6xl font-headline font-bold mb-4">
@@ -212,7 +212,7 @@ export default function MenuPage() {
   return (
     <Suspense
       fallback={
-        <div className="md:pt-32 pb-24 px-4 min-h-screen flex items-center justify-center text-muted-foreground">
+        <div className="pt-28 md:pt-32 pb-24 px-4 min-h-screen flex items-center justify-center text-muted-foreground">
           Loading menu...
         </div>
       }

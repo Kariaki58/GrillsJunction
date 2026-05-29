@@ -1,4 +1,3 @@
-
 "use client"
 
 import Image from 'next/image'
@@ -23,7 +22,7 @@ export default function Home() {
   return (
     <div className="overflow-hidden">
       {/* Hero Section */}
-      <section className="relative h-screen min-h-[700px] flex items-center justify-center">
+      <section className="relative h-screen min-h-[520px] md:min-h-[700px] flex items-center justify-center">
         <div className="absolute inset-0">
           <Image
             src={heroImage?.imageUrl || ''}
@@ -46,11 +45,11 @@ export default function Home() {
               <Clock className="w-4 h-4 mr-2" />
               OPEN 24 HOURS • DELIVERY & DRIVE-THROUGH
             </Badge>
-            <h1 className="text-5xl md:text-8xl font-headline font-bold mb-6 tracking-tight text-white">
+            <h1 className="text-3xl sm:text-5xl md:text-8xl font-headline font-bold mb-6 tracking-tight text-white">
               Lagos’ Premium <br />
               <span className="text-gradient">BBQ Experience</span>
             </h1>
-            <p className="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
               Experience the smoky soul of Alimosho. Hand-rubbed, slow-grilled, and served with true Lagos swagger.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -176,14 +175,15 @@ export default function Home() {
              <h2 className="text-4xl md:text-5xl font-headline font-bold">What The Streets Say</h2>
           </div>
           
-          <div className="flex flex-nowrap gap-6 animate-marquee">
+          <div className="overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="flex flex-nowrap gap-6 md:animate-marquee md:overflow-visible snap-x snap-mandatory scroll-smooth">
              {[
                { name: "Tunde Ednut", role: "Lagos Foodie", comment: "The Asun is legendary. Best I've had in Alimosho area, hands down!" },
                { name: "Seyi Shay", role: "Artist", comment: "grillsJunction is the perfect late-night vibe. Their Catfish is 10/10." },
                { name: "Davido", role: "Customer", comment: "E choke! Best BBQ in the city. No cap." },
                { name: "Chioma", role: "Chef", comment: "The spice level is perfect. Truly premium quality." }
              ].map((review, i) => (
-               <div key={i} className="glass-card p-8 rounded-[2.5rem] min-w-[300px] md:min-w-[400px]">
+               <div key={i} className="glass-card p-8 rounded-[2.5rem] min-w-[260px] md:min-w-[400px] flex-shrink-0 snap-start">
                  <div className="flex text-accent mb-4">
                    {[...Array(5)].map((_, j) => <Star key={j} className="w-4 h-4 fill-current" />)}
                  </div>
@@ -199,17 +199,34 @@ export default function Home() {
              ))}
           </div>
         </div>
+      </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="py-24 px-4">
-        <div className="max-w-5xl mx-auto glass rounded-[3rem] p-12 md:p-24 text-center relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full bg-primary/5 opacity-50" />
-          <h2 className="text-4xl md:text-7xl font-headline font-bold mb-8 relative z-10">Hungry? <br />Order from <span className="text-primary font-body not-italic">grillsJunction</span></h2>
-          <p className="text-xl text-muted-foreground mb-12 relative z-10 max-w-xl mx-auto">Join the premium grill movement. Order now and get it delivered in under 45 minutes.</p>
-          <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90 text-white h-16 px-12 text-xl font-bold relative z-10">
-            <Link href="/menu">ORDER FOR DELIVERY NOW</Link>
-          </Button>
+      {/* Call to Action - Fixed Version */}
+      <section className="py-20 px-4 bg-gradient-to-b from-background to-primary/5">
+        <div className="max-w-4xl mx-auto">
+          <div className="glass rounded-[3rem] p-8 md:p-16 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full bg-primary/5 opacity-40" />
+            
+            <div className="relative z-10 space-y-6">
+              <h2 className="text-3xl md:text-6xl lg:text-7xl font-headline font-bold leading-tight">
+                Hungry? <br />
+                <span className="text-primary font-body not-italic">Order Now</span>
+              </h2>
+              
+              <p className="text-base md:text-lg text-muted-foreground max-w-md mx-auto">
+                Premium grill delivered in under 45 minutes
+              </p>
+              
+              <Button 
+                asChild 
+                size="lg" 
+                className="rounded-full bg-primary hover:bg-primary/90 text-white h-12 md:h-14 px-6 md:px-10 text-base md:text-lg font-bold shadow-lg shadow-primary/30 transition-all hover:scale-105"
+              >
+                <Link href="/menu">Place Order</Link>
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
     </div>

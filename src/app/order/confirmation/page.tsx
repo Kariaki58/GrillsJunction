@@ -41,7 +41,7 @@ function ConfirmationContent() {
 
   if (!order) {
     return (
-      <div className="md:pt-32 pb-24 px-4 text-center">
+      <div className="pt-28 md:pt-32 pb-24 px-4 text-center">
         <p className="text-muted-foreground mb-6">Order not found.</p>
         <Button asChild className="rounded-full bg-primary">
           <Link href="/menu">Back to menu</Link>
@@ -62,7 +62,7 @@ function ConfirmationContent() {
   };
 
   return (
-    <div className="md:pt-32 pb-24 px-4 min-h-screen">
+    <div className="pt-28 md:pt-32 pb-24 px-4 min-h-screen">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-10">
           <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/30">
@@ -131,7 +131,7 @@ function ConfirmationContent() {
               <Download className="w-4 h-4 mr-2" />
               {downloading ? 'Generating...' : 'Download receipt'}
             </Button>
-            <Button asChild className="h-12 rounded-full glass border-border font-bold">
+            <Button asChild className="h-12  text-gray rounded-full glass border-border font-bold">
               <Link href={`/track?id=${encodeURIComponent(order.trackingId)}`}>
                 Track order
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -169,7 +169,7 @@ export default function OrderConfirmationPage() {
   return (
     <Suspense
       fallback={
-        <div className="pt-32 text-center text-muted-foreground">Loading...</div>
+        <div className="pt-28 text-center text-muted-foreground">Loading...</div>
       }
     >
       <ConfirmationContent />

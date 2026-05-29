@@ -22,7 +22,7 @@ export function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 hidden md:block">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-6">
-        <div className="glass min-h-[4.5rem] h-auto py-2 rounded-full flex items-center justify-between px-6 lg:px-8 shadow-2xl">
+        <div className="glass glass-dark min-h-[4.5rem] h-auto py-2 rounded-full flex items-center justify-between px-6 lg:px-8 shadow-2xl">
           <Link href="/" className="flex items-center shrink-0 group py-1">
             <Image
               src="/logo.png"
