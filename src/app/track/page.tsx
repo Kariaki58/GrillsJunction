@@ -18,6 +18,7 @@ import { CopyButton } from '@/components/ui/copy-button';
 import { getOrderByTrackingId, type Order } from '@/lib/orders';
 import { formatNaira } from '@/lib/format';
 import { getWhatsAppOrderUrl } from '@/lib/whatsapp';
+import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 
 const steps = [
   { id: 1, label: 'Order Confirmed', icon: CheckCircle2 },
