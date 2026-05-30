@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -7,7 +8,15 @@ import { Flame, Clock, Truck, ShieldCheck, ArrowRight, Star } from 'lucide-react
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PlaceHolderImages } from '@/lib/placeholder-images'
-import { featuredCategories, getCategoryItemCount } from '@/lib/menu'
+import { featuredCategories } from '@/lib/menu'
+import { createClient } from '@/lib/supabase/client'
+import { defaultSiteSettings, type SiteSettings } from '@/lib/site-settings'
+
+interface Category {
+  id: number;
+  name: string;
+  image: string;
+}
 
 const stats = [
   { label: 'Happy Customers', value: '15k+' },
@@ -18,6 +27,56 @@ const stats = [
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find(img => img.id === 'hero-bg')
+  const [categories, setCategories] = useState<Category[]>([])
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>(defaultSiteSettings)
+  const supabase = createClient()
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      const [{ data: categoriesData }, { data: menuData, error }] = await Promise.all([
+        supabase.from('categories').select('*').order('id', { ascending: true }),
+        supabase.from('menu_items').select('category'),
+      ])
+
+      if (categoriesData) {
+        setCategories(categoriesData)
+      }
+
+      if (!error && menuData) {
+        const counts: Record<string, number> = {}
+        menuData.forEach((item) => {
+          counts[item.category] = (counts[item.category] || 0) + 1
+        })
+        setCategoryCounts(counts)
+      }
+    }
+    fetchCounts()
+  }, [])
+
+  useEffect(() => {
+    const loadSiteSettings = async () => {
+      try {
+        const response = await fetch('/api/site-settings')
+        const data = await response.json()
+        setSiteSettings(data ?? defaultSiteSettings)
+      } catch {
+        setSiteSettings(defaultSiteSettings)
+      }
+    }
+
+    loadSiteSettings()
+  }, [])
+
+  const categoryCards = categories.length > 0
+    ? categories
+    : Object.keys(categoryCounts).length > 0
+      ? Object.keys(categoryCounts).map((name, idx) => ({
+          id: idx,
+          name,
+          image: PlaceHolderImages.find((i) => i.id === name.toLowerCase().replace(/\s+/g, '-'))?.imageUrl || '',
+        }))
+      : featuredCategories.map((cat, idx) => ({ id: idx, name: cat.name, image: cat.image }))
 
   return (
     <div className="overflow-hidden">
@@ -32,7 +91,6 @@ export default function Home() {
         priority
         data-ai-hint="luxury barbecue"
       />
-      {/* Changed from white gradient to darker gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
     </div>
 
@@ -44,14 +102,13 @@ export default function Home() {
       >
         <Badge className="mb-6 bg-primary/20 text-primary border-primary/30 px-4 py-1.5 rounded-full font-bold animate-pulse">
           <Clock className="w-4 h-4 mr-2" />
-          OPEN 24 HOURS • DELIVERY & DRIVE-THROUGH
+          {siteSettings.openingTime} - {siteSettings.closingTime} • DELIVERY AVAILABLE
         </Badge>
         <h1 className="text-3xl sm:text-5xl md:text-8xl font-headline font-bold mb-6 tracking-tight text-white">
-          Lagos’ Premium <br />
-          <span className="text-gradient">BBQ Experience</span>
+          {siteSettings.siteTitle}
         </h1>
         <p className="text-base md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
-          Experience the smoky soul of Alimosho. Hand-rubbed, slow-grilled, and served with true Lagos swagger.
+          {siteSettings.siteDescription}
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90 text-white h-14 px-10 text-lg font-bold shadow-xl shadow-primary/20 w-full sm:w-auto">
@@ -83,23 +140,28 @@ export default function Home() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-        {featuredCategories.map((cat, idx) => {
-          const count = getCategoryItemCount(cat.menuCategory);
+        {categoryCards.map((cat, idx) => {
+          const categoryName = cat.name;
+          const count = categoryCounts[categoryName] || 0;
+          const imageValue = cat.image;
+          const imageSrc = imageValue.startsWith('http')
+            ? imageValue
+            : PlaceHolderImages.find(i => i.id === imageValue)?.imageUrl || '';
           return (
             <motion.div
-              key={cat.name}
+              key={categoryName}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               viewport={{ once: true }}
             >
               <Link
-                href={`/menu?category=${encodeURIComponent(cat.menuCategory)}`}
+                href={`/menu?category=${encodeURIComponent(categoryName)}`}
                 className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-3xl"
               >
                 <div className="relative aspect-[3/4] rounded-3xl overflow-hidden mb-4">
                   <Image
-                    src={PlaceHolderImages.find(i => i.id === cat.image)?.imageUrl || ''}
+                    src={imageSrc}
                     alt={cat.name}
                     fill
                     className="object-cover group-hover:scale-110 transition-transform duration-700"

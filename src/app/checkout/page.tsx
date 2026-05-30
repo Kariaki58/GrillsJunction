@@ -17,6 +17,7 @@ import { DELIVERY_FEE } from '@/lib/menu';
 import { formatNaira } from '@/lib/format';
 import { generateTrackingId, saveOrder, type FulfillmentType } from '@/lib/orders';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { createClient } from '@/lib/supabase/client';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -54,12 +55,63 @@ export default function CheckoutPage() {
     return Object.keys(next).length === 0;
   };
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (!validate() || items.length === 0) return;
     setSubmitting(true);
 
-    const order = {
-      trackingId: generateTrackingId(),
+    const trackingId = generateTrackingId();
+    const supabase = createClient();
+
+    const orderData = {
+      tracking_id: trackingId,
+      customer_name: fullName.trim(),
+      customer_phone: phone.trim(),
+      customer_email: email.trim(),
+      fulfillment_type: fulfillmentType,
+      fulfillment_address: address.trim() || null,
+      fulfillment_area: area.trim() || null,
+      fulfillment_notes: notes.trim() || null,
+      subtotal,
+      delivery_fee: deliveryFee,
+      total,
+      payment_confirmed: true,
+      status: 'pending'
+    };
+
+    const { data: orderResult, error: orderError } = await supabase
+      .from('orders')
+      .insert([orderData])
+      .select('id')
+      .single();
+
+    if (orderError || !orderResult) {
+      console.error('Error saving order:', orderError);
+      setSubmitting(false);
+      return;
+    }
+
+    const orderId = orderResult.id;
+    const orderItemsData = items.map(item => ({
+      order_id: orderId,
+      menu_item_id: item.id,
+      name: item.name,
+      price: item.price,
+      quantity: item.qty,
+      image: item.image
+    }));
+
+    const { error: itemsError } = await supabase
+      .from('order_items')
+      .insert(orderItemsData);
+
+    if (itemsError) {
+      console.error('Error saving order items:', itemsError);
+      // Decide if you want to abort or continue
+    }
+
+    // Save locally for quick retrieval in confirmation page
+    const localOrder = {
+      trackingId,
       createdAt: new Date().toISOString(),
       customer: { fullName: fullName.trim(), phone: phone.trim(), email: email.trim() },
       fulfillment: {
@@ -74,10 +126,10 @@ export default function CheckoutPage() {
       total,
       paymentConfirmed: true,
     };
+    saveOrder(localOrder);
 
-    saveOrder(order);
     clearCart();
-    router.push(`/order/confirmation?tracking=${encodeURIComponent(order.trackingId)}`);
+    router.push(`/order/confirmation?tracking=${encodeURIComponent(trackingId)}`);
   };
 
   if (items.length === 0) {

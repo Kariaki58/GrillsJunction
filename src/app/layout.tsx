@@ -1,14 +1,15 @@
-
-import type {Metadata} from 'next';
+import type { Metadata } from 'next';
 import './globals.css';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { MobileHeader } from '@/components/layout/MobileHeader';
 import { Navbar } from '@/components/layout/Navbar';
 import { FloatingWhatsApp } from '@/components/ui/FloatingWhatsApp';
 import { Providers } from '@/components/providers';
+import { NavigationWrapper } from '@/components/layout/NavigationWrapper';
+import { MainWrapper } from '@/components/layout/MainWrapper';
 
 export const metadata: Metadata = {
-  title: 'grillsJunction | Lagos’ Premium BBQ Experience',
+  title: 'grillsJunction | Lagos\' Premium BBQ Experience',
   description: 'grillsJunction — luxury African BBQ specializing in Asun, Grilled Chicken, Catfish, and more. 24/7 delivery in Lagos.',
 };
 
@@ -26,13 +27,17 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased selection:bg-primary selection:text-primary-foreground">
         <Providers>
-          <Navbar />
-          <MobileHeader />
-          <main className="pb-20 pt-[7.25rem] md:pt-0 md:pb-0 min-h-screen">
+          <NavigationWrapper>
+            <Navbar />
+            <MobileHeader />
+          </NavigationWrapper>
+          <MainWrapper>
             {children}
-          </main>
-          <MobileNav />
-          <FloatingWhatsApp />
+          </MainWrapper>
+          <NavigationWrapper>
+            <MobileNav />
+            <FloatingWhatsApp />
+          </NavigationWrapper>
         </Providers>
       </body>
     </html>

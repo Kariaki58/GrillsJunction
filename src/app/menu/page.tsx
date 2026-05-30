@@ -5,28 +5,66 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ShoppingCart, Flame, Star, Plus, ArrowRight, Utensils } from 'lucide-react';
+import { Search, ShoppingCart, Flame, Star, Plus, ArrowRight, Utensils, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { menuItems, menuCategories, isMenuCategory } from '@/lib/menu';
+import { menuCategories } from '@/lib/menu';
 import { useCart } from '@/context/cart-context';
 import { formatNaira } from '@/lib/format';
 import { useToast } from '@/hooks/use-toast';
+import { createClient } from '@/lib/supabase/client';
+
+interface MenuItem {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+  rating: number;
+  desc: string;
+  image: string;
+  badge: string | null;
+}
 
 function MenuContent() {
   const searchParams = useSearchParams();
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [categoryNames, setCategoryNames] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { addItem, itemCount, subtotal } = useCart();
   const { toast } = useToast();
+  const supabase = createClient();
+
+  const availableCategories = categoryNames.length > 0 ? categoryNames : menuCategories.filter((cat) => cat !== 'All');
+  const categoryOptions = ['All', ...availableCategories];
 
   useEffect(() => {
     const category = searchParams.get('category');
-    if (category && isMenuCategory(category) && category !== 'All') {
+    if (category && category !== 'All' && availableCategories.includes(category)) {
       setActiveCategory(category);
     }
-  }, [searchParams]);
+  }, [searchParams, availableCategories]);
+
+  useEffect(() => {
+    const fetchMenuItems = async () => {
+      setIsLoading(true);
+      const [{ data: menuData, error: menuError }, { data: categoriesData }] = await Promise.all([
+        supabase.from('menu_items').select('*').order('id', { ascending: true }),
+        supabase.from('categories').select('name').order('name', { ascending: true }),
+      ]);
+
+      if (!menuError && menuData) {
+        setMenuItems(menuData);
+      }
+      if (categoriesData) {
+        setCategoryNames(categoriesData.map((cat) => cat.name));
+      }
+      setIsLoading(false);
+    };
+    fetchMenuItems();
+  }, []);
 
   const filteredItems = menuItems.filter((item) => {
     const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
@@ -34,7 +72,7 @@ function MenuContent() {
     return matchesCategory && matchesSearch;
   });
 
-  const handleAddToCart = (item: (typeof menuItems)[0]) => {
+  const handleAddToCart = (item: MenuItem) => {
     addItem({
       id: item.id,
       name: item.name,
@@ -56,6 +94,13 @@ function MenuContent() {
       url.searchParams.set('category', cat);
     }
     window.history.replaceState({}, '', url.toString());
+  };
+
+  const getImageSrc = (image: string) => {
+    if (!image) return PlaceHolderImages[0]?.imageUrl || '';
+    if (image.startsWith('http')) return image;
+    const placeholder = PlaceHolderImages.find((i) => i.id === image);
+    return placeholder?.imageUrl || image; // Fallback to raw string if it's a custom path
   };
 
   return (
@@ -84,7 +129,7 @@ function MenuContent() {
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar justify-center">
-            {menuCategories.map((cat) => (
+            {['All', ...(categoryNames.length > 0 ? categoryNames : menuCategories.filter((cat) => cat !== 'All'))].map((cat) => (
               <button
                 key={cat}
                 type="button"
@@ -101,74 +146,80 @@ function MenuContent() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          <AnimatePresence mode="popLayout">
-            {filteredItems.map((item) => (
-              <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="group relative"
-              >
-                <div className="glass-card rounded-[2rem] overflow-hidden flex flex-col h-full shadow-lg border-border group-hover:border-primary/20 transition-all duration-500">
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image
-                      src={PlaceHolderImages.find((i) => i.id === item.image)?.imageUrl || ''}
-                      alt={item.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
-                    {item.badge && (
-                      <div className="absolute top-4 left-4">
-                        <Badge className="bg-primary text-white border-none px-3 py-1 font-bold">
-                          {item.badge}
-                        </Badge>
+        {isLoading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <AnimatePresence mode="popLayout">
+              {filteredItems.map((item) => (
+                <motion.div
+                  key={item.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="group relative"
+                >
+                  <div className="glass-card rounded-[2rem] overflow-hidden flex flex-col h-full shadow-lg border-border group-hover:border-primary/20 transition-all duration-500">
+                    <div className="relative aspect-[4/3] overflow-hidden">
+                      <Image
+                        src={getImageSrc(item.image)}
+                        alt={item.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                      {item.badge && (
+                        <div className="absolute top-4 left-4">
+                          <Badge className="bg-primary text-white border-none px-3 py-1 font-bold">
+                            {item.badge}
+                          </Badge>
+                        </div>
+                      )}
+                      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+                        <div className="glass px-3 py-1 rounded-full flex items-center gap-1">
+                          <Star className="w-3 h-3 text-secondary fill-current" />
+                          <span className="text-xs font-bold">{item.rating}</span>
+                        </div>
+                        <div className="glass px-3 py-1 rounded-full flex items-center gap-1">
+                          <Flame className="w-3 h-3 text-primary" />
+                          <span className="text-[10px] font-bold uppercase tracking-widest">
+                            Hot & Spicy
+                          </span>
+                        </div>
                       </div>
-                    )}
-                    <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-                      <div className="glass px-3 py-1 rounded-full flex items-center gap-1">
-                        <Star className="w-3 h-3 text-secondary fill-current" />
-                        <span className="text-xs font-bold">{item.rating}</span>
-                      </div>
-                      <div className="glass px-3 py-1 rounded-full flex items-center gap-1">
-                        <Flame className="w-3 h-3 text-primary" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">
-                          Hot & Spicy
-                        </span>
+                    </div>
+
+                    <div className="p-6 flex-1 flex flex-col">
+                      <h3 className="text-2xl font-bold mb-2 transition-colors">{item.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-6 line-clamp-2">{item.desc}</p>
+
+                      <div className="mt-auto flex items-center justify-between">
+                        <div>
+                          <span className="text-xs text-muted-foreground block font-bold uppercase">
+                            Price
+                          </span>
+                          <span className="text-2xl font-bold">{formatNaira(item.price)}</span>
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={() => handleAddToCart(item)}
+                          className="w-12 h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white p-0 shadow-lg shadow-primary/20"
+                          aria-label={`Add ${item.name} to cart`}
+                        >
+                          <Plus className="w-6 h-6" />
+                        </Button>
                       </div>
                     </div>
                   </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
 
-                  <div className="p-6 flex-1 flex flex-col">
-                    <h3 className="text-2xl font-bold mb-2 transition-colors">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-6 line-clamp-2">{item.desc}</p>
-
-                    <div className="mt-auto flex items-center justify-between">
-                      <div>
-                        <span className="text-xs text-muted-foreground block font-bold uppercase">
-                          Price
-                        </span>
-                        <span className="text-2xl font-bold">{formatNaira(item.price)}</span>
-                      </div>
-                      <Button
-                        type="button"
-                        onClick={() => handleAddToCart(item)}
-                        className="w-12 h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white p-0 shadow-lg shadow-primary/20"
-                        aria-label={`Add ${item.name} to cart`}
-                      >
-                        <Plus className="w-6 h-6" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-
-        {filteredItems.length === 0 && (
+        {!isLoading && filteredItems.length === 0 && (
           <div className="text-center py-20">
             <Utensils className="w-16 h-16 text-muted-foreground/20 mx-auto mb-4" />
             <h3 className="text-2xl font-bold">No BBQ found!</h3>
