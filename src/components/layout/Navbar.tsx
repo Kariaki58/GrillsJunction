@@ -11,7 +11,6 @@ import { useCart } from '@/context/cart-context';
 const navLinks = [
   { name: 'Home', href: '/' },
   { name: 'Menu', href: '/menu' },
-  { name: 'About Us', href: '/about' },
   { name: 'Track Order', href: '/track' },
 ];
 
@@ -22,14 +21,14 @@ export function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 hidden md:block">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-6">
-        <div className="glass glass-dark min-h-[4.5rem] h-auto py-2 rounded-full flex items-center justify-between px-6 lg:px-8 shadow-2xl">
+        <div className="glass h-16 md:h-20 rounded-full flex items-center justify-between px-6 lg:px-8 shadow-2xl">
           <Link href="/" className="flex items-center shrink-0 group py-1">
             <Image
               src="/logo.png"
               alt="grillsJunction"
               width={280}
               height={231}
-              className="h-14 lg:h-16 w-auto max-w-[200px] lg:max-w-[240px] object-contain group-hover:scale-[1.02] transition-transform"
+              className="h-10 md:h-12 lg:h-14 w-auto object-contain group-hover:scale-[1.02] transition-transform"
               priority
             />
           </Link>
@@ -50,8 +49,10 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted">
-              <Search className="w-5 h-5" />
+            <Button asChild variant="ghost" size="icon" className="rounded-full hover:bg-muted">
+              <Link href="/menu?focusSearch=true">
+                <Search className="w-5 h-5" />
+              </Link>
             </Button>
             <Link href="/cart">
               <Button

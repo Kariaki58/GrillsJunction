@@ -13,6 +13,12 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 export default function CartPage() {
   const { items, subtotal, updateQty, removeItem } = useCart();
   const deliveryFee = items.length > 0 ? DELIVERY_FEE : 0;
+  const getImageSrc = (image: string | null | undefined) => {
+    if (!image) return PlaceHolderImages[0]?.imageUrl || '/placeholder.png';
+    if (image.startsWith('http')) return image;
+    const placeholder = PlaceHolderImages.find((i) => i.id === image);
+    return placeholder?.imageUrl || image; 
+  };
   const total = subtotal + deliveryFee;
 
   return (
@@ -33,9 +39,7 @@ export default function CartPage() {
                 {/* Image - Always on the left */}
                 <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden shrink-0 bg-muted">
                   <Image
-                    src={
-                      PlaceHolderImages.find((i) => i.id === item.image)?.imageUrl || ''
-                    }
+                    src={getImageSrc(item.image)}
                     alt={item.name}
                     fill
                     className="object-cover"

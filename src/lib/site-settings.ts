@@ -16,8 +16,8 @@ export interface SiteSettings {
 
 export const defaultSiteSettings: SiteSettings = {
   businessName: 'GrillsJunction',
-  siteTitle: 'GrillsJunction | Lagos Premium BBQ Experience',
-  siteDescription: 'Luxury African BBQ specializing in Asun, Grilled Chicken, Catfish, and more.',
+  siteTitle: "Lagos' Favorite Spot for Premium BBQ & Grills",
+  siteDescription: "Savor the rich flavors of our signature Asun, perfectly grilled Chicken, spicy Catfish, and other mouthwatering specialties. Prepared fresh, served hot, and crafted with passion because every meal should be memorable.",
   address: '123 Lekki Phase 1',
   city: 'Lagos',
   state: 'Lagos State',

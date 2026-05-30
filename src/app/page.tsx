@@ -8,7 +8,6 @@ import { Flame, Clock, Truck, ShieldCheck, ArrowRight, Star } from 'lucide-react
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PlaceHolderImages } from '@/lib/placeholder-images'
-import { featuredCategories } from '@/lib/menu'
 import { createClient } from '@/lib/supabase/client'
 import { defaultSiteSettings, type SiteSettings } from '@/lib/site-settings'
 
@@ -68,15 +67,7 @@ export default function Home() {
     loadSiteSettings()
   }, [])
 
-  const categoryCards = categories.length > 0
-    ? categories
-    : Object.keys(categoryCounts).length > 0
-      ? Object.keys(categoryCounts).map((name, idx) => ({
-          id: idx,
-          name,
-          image: PlaceHolderImages.find((i) => i.id === name.toLowerCase().replace(/\s+/g, '-'))?.imageUrl || '',
-        }))
-      : featuredCategories.map((cat, idx) => ({ id: idx, name: cat.name, image: cat.image }))
+  const categoryCards = categories
 
   return (
     <div className="overflow-hidden">
@@ -94,23 +85,20 @@ export default function Home() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
     </div>
 
-    <div className="relative z-10 text-center max-w-4xl px-4">
+    <div className="relative z-10 text-center max-w-4xl px-4 pt-24 md:pt-32">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
+        className="max-w-5xl mx-auto"
       >
-        <Badge className="mb-6 bg-primary/20 text-primary border-primary/30 px-4 py-1.5 rounded-full font-bold animate-pulse">
-          <Clock className="w-4 h-4 mr-2" />
-          {siteSettings.openingTime} - {siteSettings.closingTime} • DELIVERY AVAILABLE
-        </Badge>
-        <h1 className="text-3xl sm:text-5xl md:text-8xl font-headline font-bold mb-6 tracking-tight text-white">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-headline font-bold mb-6 tracking-tight text-white leading-tight">
           {siteSettings.siteTitle}
         </h1>
-        <p className="text-base md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-base md:text-lg lg:text-xl text-white/80 mb-10 max-w-3xl mx-auto leading-relaxed font-light">
           {siteSettings.siteDescription}
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
           <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90 text-white h-14 px-10 text-lg font-bold shadow-xl shadow-primary/20 w-full sm:w-auto">
             <Link href="/menu">Order Now</Link>
           </Button>
@@ -118,15 +106,20 @@ export default function Home() {
             <Link href="/menu">Explore Menu</Link>
           </Button>
         </div>
+        
+        <p className="text-[10px] sm:text-xs md:text-sm tracking-[0.25em] sm:tracking-[0.3em] font-medium text-white/60 uppercase">
+          Order Today <span className="mx-1.5 sm:mx-3 text-primary/80">•</span> Dine In <span className="mx-1.5 sm:mx-3 text-primary/80">•</span> Takeaway <span className="mx-1.5 sm:mx-3 text-primary/80">•</span> Delivery
+        </p>
       </motion.div>
     </div>
 
-    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce hidden md:block">
+    {/* <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce hidden md:block">
       <div className="w-1 h-12 rounded-full bg-gradient-to-b from-primary to-transparent" />
-    </div>
+    </div> */}
   </section>
 
   {/* Featured Categories */}
+  {categoryCards.length > 0 && (
   <section className="py-24 px-4 bg-background">
     <div className="max-w-7xl mx-auto">
       <div className="flex items-end justify-between mb-12">
@@ -143,7 +136,7 @@ export default function Home() {
         {categoryCards.map((cat, idx) => {
           const categoryName = cat.name;
           const count = categoryCounts[categoryName] || 0;
-          const imageValue = cat.image;
+          const imageValue = cat.image || '';
           const imageSrc = imageValue.startsWith('http')
             ? imageValue
             : PlaceHolderImages.find(i => i.id === imageValue)?.imageUrl || '';
@@ -168,7 +161,7 @@ export default function Home() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
                   <div className="absolute bottom-6 left-6">
-                    <h3 className="text-xl font-bold mb-1 text-white">{cat.name}</h3>
+                    <h3 className="text-xl font-bold mb-1 text-white">{(cat as any).displayName || cat.name}</h3>
                     <p className="text-xs text-white/60">
                       {count} {count === 1 ? 'item' : 'items'}
                     </p>
@@ -181,6 +174,7 @@ export default function Home() {
       </div>
     </div>
   </section>
+  )}
 
   {/* Why grillsJunction Section */}
   <section className="py-24 px-4 bg-muted/50">
@@ -235,11 +229,11 @@ export default function Home() {
   <section className="py-24 px-4 overflow-hidden">
     <div className="max-w-7xl mx-auto">
       <div className="text-center mb-16">
-         <h2 className="text-4xl md:text-5xl font-headline font-bold">What The Streets Say</h2>
+         <h2 className="text-4xl md:text-5xl font-headline font-bold">What The Customers Say</h2>
       </div>
       
       <div className="overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
-        <div className="flex flex-nowrap gap-6 md:animate-marquee md:overflow-visible snap-x snap-mandatory scroll-smooth">
+        <div className="flex flex-nowrap gap-6 md:animate-marquee md:overflow-visible snap-x snap-mandatory scroll-smooth p-4">
          {[
            { name: "Tunde Ednut", role: "Lagos Foodie", comment: "The Asun is legendary. Best I've had in Alimosho area, hands down!" },
            { name: "Seyi Shay", role: "Artist", comment: "grillsJunction is the perfect late-night vibe. Their Catfish is 10/10." },
@@ -252,10 +246,10 @@ export default function Home() {
              </div>
              <p className="text-lg italic mb-6">"{review.comment}"</p>
              <div className="flex items-center gap-4">
-               <div className="w-10 h-10 rounded-full bg-primary/20" />
+               {/* <div className="w-10 h-10 rounded-full bg-primary/20" /> */}
                <div>
                  <p className="font-bold">{review.name}</p>
-                 <p className="text-xs text-muted-foreground">{review.role}</p>
+                 {/* <p className="text-xs text-muted-foreground">{review.role}</p> */}
                </div>
              </div>
            </div>

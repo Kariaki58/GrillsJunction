@@ -33,10 +33,18 @@ export default function CheckoutPage() {
   const [notes, setNotes] = useState('');
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const deliveryFee = fulfillmentType === 'delivery' ? DELIVERY_FEE : 0;
   const total = subtotal + deliveryFee;
+  
+  const getImageSrc = (image: string | null | undefined) => {
+    if (!image) return PlaceHolderImages[0]?.imageUrl || '/placeholder.png';
+    if (image.startsWith('http')) return image;
+    const placeholder = PlaceHolderImages.find((i) => i.id === image);
+    return placeholder?.imageUrl || image; 
+  };
 
   const validate = () => {
     const next: Record<string, string> = {};
@@ -128,9 +136,19 @@ export default function CheckoutPage() {
     };
     saveOrder(localOrder);
 
+    setIsSuccess(true);
     clearCart();
     router.push(`/order/confirmation?tracking=${encodeURIComponent(trackingId)}`);
   };
+
+  if (isSuccess) {
+    return (
+      <div className="pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-16 sm:pb-20 md:pb-24 px-3 sm:px-4 min-h-screen flex flex-col items-center justify-center text-center">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-muted-foreground text-base sm:text-lg animate-pulse">Confirming your order...</p>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -325,10 +343,7 @@ export default function CheckoutPage() {
                   <div key={item.id} className="flex gap-2 sm:gap-3 items-center">
                     <div className="relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg sm:rounded-xl overflow-hidden shrink-0 bg-muted">
                       <Image
-                        src={
-                          PlaceHolderImages.find((i) => i.id === item.image)
-                            ?.imageUrl || ''
-                        }
+                        src={getImageSrc(item.image)}
                         alt={item.name}
                         fill
                         className="object-cover"

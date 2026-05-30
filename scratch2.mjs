@@ -1,0 +1,14 @@
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+async function run() {
+  const { data, error } = await supabase.rpc('get_table_info', { p_table_name: 'categories' });
+  if (error) {
+     const { data: d2 } = await supabase.from('categories').select('*').limit(1);
+     console.log('Categories:', d2);
+  } else {
+     console.log('Schema:', data);
+  }
+}
+run();

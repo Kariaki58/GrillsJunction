@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -9,7 +9,6 @@ import { Search, ShoppingCart, Flame, Star, Plus, ArrowRight, Utensils, Loader2 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { menuCategories } from '@/lib/menu';
 import { useCart } from '@/context/cart-context';
 import { formatNaira } from '@/lib/format';
 import { useToast } from '@/hooks/use-toast';
@@ -36,14 +35,21 @@ function MenuContent() {
   const { addItem, itemCount, subtotal } = useCart();
   const { toast } = useToast();
   const supabase = createClient();
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const availableCategories = categoryNames.length > 0 ? categoryNames : menuCategories.filter((cat) => cat !== 'All');
+  const availableCategories = categoryNames;
   const categoryOptions = ['All', ...availableCategories];
 
   useEffect(() => {
     const category = searchParams.get('category');
     if (category && category !== 'All' && availableCategories.includes(category)) {
       setActiveCategory(category);
+    }
+    
+    if (searchParams.get('focusSearch') === 'true') {
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
     }
   }, [searchParams, availableCategories]);
 
@@ -121,6 +127,7 @@ function MenuContent() {
           <div className="max-w-2xl mx-auto relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <input
+              ref={searchInputRef}
               placeholder="Search for Asun, Chicken, Catfish..."
               className="h-14 w-full pl-12 pr-4 rounded-full glass border-border text-lg shadow-2xl focus:ring-primary outline-none focus:border-primary/50"
               value={searchQuery}
@@ -129,7 +136,7 @@ function MenuContent() {
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar justify-center">
-            {['All', ...(categoryNames.length > 0 ? categoryNames : menuCategories.filter((cat) => cat !== 'All'))].map((cat) => (
+            {['All', ...categoryNames].map((cat) => (
               <button
                 key={cat}
                 type="button"
