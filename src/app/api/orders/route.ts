@@ -2,11 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function POST(request: NextRequest) {
-  console.log('[API /api/orders] ▶ Received order request');
 
   try {
     const body = await request.json();
-    console.log('[API /api/orders] 📦 Request body:', JSON.stringify(body, null, 2));
 
     const {
       tracking_id,
@@ -44,7 +42,6 @@ export async function POST(request: NextRequest) {
 
     // --- Create admin client (bypasses RLS) ---
     const supabase = createAdminClient();
-    console.log('[API /api/orders] 🔑 Admin client created');
 
     // --- Insert the order ---
     const orderData = {
@@ -63,7 +60,6 @@ export async function POST(request: NextRequest) {
       status: status || 'pending',
     };
 
-    console.log('[API /api/orders] 📝 Inserting order:', JSON.stringify(orderData, null, 2));
 
     const { data: orderResult, error: orderError } = await supabase
       .from('orders')
@@ -79,7 +75,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('[API /api/orders] ✅ Order created with id:', orderResult.id);
 
     // --- Insert order items ---
     const orderId = orderResult.id;
@@ -92,7 +87,6 @@ export async function POST(request: NextRequest) {
       image: item.image || null,
     }));
 
-    console.log('[API /api/orders] 📝 Inserting order items:', JSON.stringify(orderItemsData, null, 2));
 
     const { error: itemsError } = await supabase
       .from('order_items')
@@ -111,10 +105,6 @@ export async function POST(request: NextRequest) {
         { status: 201 }
       );
     }
-
-    console.log('[API /api/orders] ✅ All order items saved successfully');
-    console.log('[API /api/orders] 🎉 Order complete — tracking_id:', tracking_id);
-
     return NextResponse.json(
       { success: true, orderId, trackingId: tracking_id },
       { status: 201 }

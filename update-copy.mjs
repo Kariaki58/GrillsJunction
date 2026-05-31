@@ -11,6 +11,5 @@ async function update() {
     })
     .eq('id', 1);
   if (error) console.error(error);
-  else console.log('Updated successfully');
 }
 update();

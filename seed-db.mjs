@@ -8,7 +8,6 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PU
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function seed() {
-  console.log('Seeding categories...');
   const categories = [
     { name: 'Asun', image: 'asun-special' },
     { name: 'Chicken', image: 'bbq-chicken' },
@@ -22,7 +21,6 @@ async function seed() {
     if (error) console.error('Error inserting category:', error);
   }
 
-  console.log('Seeding menu items...');
   const menuItems = [
     { name: 'Special Lagos Asun', category: 'Asun', price: 4500, rating: 4.9, desc: 'Fiery goat meat, hand-cut and slow grilled with scotch bonnets.', image: 'asun-special', badge: 'Best Seller' },
     { name: 'Flame BBQ Chicken', category: 'Chicken', price: 6500, rating: 4.8, desc: 'Half chicken marinated in house spices for 24 hours.', image: 'bbq-chicken', badge: 'Popular' },
@@ -37,7 +35,6 @@ async function seed() {
     if (error) console.error('Error inserting item:', item.name, error);
   }
   
-  console.log('Seed complete!');
 }
 
 seed();

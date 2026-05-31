@@ -67,7 +67,6 @@ export default function CheckoutPage() {
     setSubmitting(true);
 
     const trackingId = generateTrackingId();
-    console.log('[Checkout] ▶ Starting order placement — trackingId:', trackingId);
 
     const orderPayload = {
       tracking_id: trackingId,
@@ -92,7 +91,6 @@ export default function CheckoutPage() {
       })),
     };
 
-    console.log('[Checkout] 📦 Sending payload to /api/orders:', JSON.stringify(orderPayload, null, 2));
 
     try {
       const res = await fetch('/api/orders', {
@@ -101,10 +99,8 @@ export default function CheckoutPage() {
         body: JSON.stringify(orderPayload),
       });
 
-      console.log('[Checkout] 📡 API response status:', res.status);
 
       const data = await res.json();
-      console.log('[Checkout] 📡 API response body:', JSON.stringify(data, null, 2));
 
       if (!res.ok || !data.success) {
         console.error('[Checkout] ❌ Order failed:', data.error || data);
@@ -112,13 +108,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      if (data.warning) {
-        console.warn('[Checkout] ⚠️ Order warning:', data.warning);
-      }
-
-      console.log('[Checkout] ✅ Order created — orderId:', data.orderId);
     } catch (err) {
-      console.error('[Checkout] 💥 Network/fetch error:', err);
       setSubmitting(false);
       return;
     }
@@ -142,7 +132,6 @@ export default function CheckoutPage() {
     };
     saveOrder(localOrder);
 
-    console.log('[Checkout] 🎉 Order complete — redirecting to confirmation');
     setIsSuccess(true);
     clearCart();
     router.push(`/order/confirmation?tracking=${encodeURIComponent(trackingId)}`);
