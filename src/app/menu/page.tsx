@@ -17,7 +17,6 @@ import { createClient } from '@/lib/supabase/client';
 interface MenuItem {
   id: number;
   name: string;
-  category: string;
   price: number;
   rating: number;
   desc: string;
@@ -27,45 +26,32 @@ interface MenuItem {
 
 function MenuContent() {
   const searchParams = useSearchParams();
-  const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-  const [categoryNames, setCategoryNames] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { addItem, itemCount, subtotal } = useCart();
   const { toast } = useToast();
   const supabase = createClient();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const availableCategories = categoryNames;
-  const categoryOptions = ['All', ...availableCategories];
-
   useEffect(() => {
-    const category = searchParams.get('category');
-    if (category && category !== 'All' && availableCategories.includes(category)) {
-      setActiveCategory(category);
-    }
-    
     if (searchParams.get('focusSearch') === 'true') {
       setTimeout(() => {
         searchInputRef.current?.focus();
       }, 100);
     }
-  }, [searchParams, availableCategories]);
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchMenuItems = async () => {
       setIsLoading(true);
-      const [{ data: menuData, error: menuError }, { data: categoriesData }] = await Promise.all([
-        supabase.from('menu_items').select('*').order('id', { ascending: true }),
-        supabase.from('categories').select('name').order('name', { ascending: true }),
-      ]);
+      const { data: menuData, error: menuError } = await supabase
+        .from('menu_items')
+        .select('*')
+        .order('id', { ascending: true });
 
       if (!menuError && menuData) {
         setMenuItems(menuData);
-      }
-      if (categoriesData) {
-        setCategoryNames(categoriesData.map((cat) => cat.name));
       }
       setIsLoading(false);
     };
@@ -73,9 +59,7 @@ function MenuContent() {
   }, []);
 
   const filteredItems = menuItems.filter((item) => {
-    const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return item.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   const handleAddToCart = (item: MenuItem) => {
@@ -91,16 +75,7 @@ function MenuContent() {
     });
   };
 
-  const handleCategoryChange = (cat: string) => {
-    setActiveCategory(cat);
-    const url = new URL(window.location.href);
-    if (cat === 'All') {
-      url.searchParams.delete('category');
-    } else {
-      url.searchParams.set('category', cat);
-    }
-    window.history.replaceState({}, '', url.toString());
-  };
+
 
   const getImageSrc = (image: string) => {
     if (!image) return PlaceHolderImages[0]?.imageUrl || '';
@@ -117,9 +92,7 @@ function MenuContent() {
             The <span className="font-body not-italic">grillsJunction</span> Menu
           </h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            {activeCategory === 'All'
-              ? 'Explore our premium selection of fire-grilled delicacies, prepared fresh in Alimosho, Lagos.'
-              : `Showing ${activeCategory} — hand-grilled and ready to order.`}
+            Explore our premium selection of fire-grilled delicacies, prepared fresh in Alimosho, Lagos.
           </p>
         </header>
 
@@ -133,23 +106,6 @@ function MenuContent() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-          </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar justify-center">
-            {['All', ...categoryNames].map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => handleCategoryChange(cat)}
-                className={`px-6 py-2 rounded-full whitespace-nowrap transition-all duration-300 font-bold border ${
-                  activeCategory === cat
-                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                    : 'bg-muted text-muted-foreground border-border hover:bg-muted hover:text-foreground'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
           </div>
         </div>
 

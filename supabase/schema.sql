@@ -7,7 +7,6 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE public.menu_items (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    category TEXT NOT NULL,
     price NUMERIC NOT NULL,
     rating NUMERIC DEFAULT 0.0,
     "desc" TEXT,
@@ -16,25 +15,7 @@ CREATE TABLE public.menu_items (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- ==========================================
--- 1.5. CATEGORY TABLE
--- ==========================================
-CREATE TABLE public.categories (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    image TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
 
-ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Public read access to categories"
-ON public.categories FOR SELECT USING (true);
-
-CREATE POLICY "Admin write access to categories"
-ON public.categories FOR ALL USING (auth.role() = 'authenticated');
-
--- ==========================================
 -- 1.75. SITE SETTINGS TABLE
 -- ==========================================
 CREATE TABLE public.site_settings (
@@ -154,13 +135,13 @@ ON public.order_items FOR DELETE USING (auth.role() = 'authenticated');
 -- ==========================================
 -- SEED DATA (MOCK MENU ITEMS)
 -- ==========================================
-INSERT INTO public.menu_items (name, category, price, rating, "desc", image, badge) VALUES
-('Special Lagos Asun', 'Asun', 4500, 4.9, 'Fiery goat meat, hand-cut and slow grilled with scotch bonnets.', 'asun-special', 'Best Seller'),
-('Flame BBQ Chicken', 'Chicken', 6500, 4.8, 'Half chicken marinated in house spices for 24 hours.', 'bbq-chicken', 'Popular'),
-('Premium Grilled Catfish', 'Fish', 8500, 5.0, 'Whole point-and-kill catfish, expertly seasoned.', 'catfish-bbq', 'Fresh'),
-('Suya Spiced Beef BBQ', 'Beef', 5500, 4.7, 'Tender beef chunks with yaji spice and grilled onions.', 'beef-bbq', NULL),
-('Signature Turkey Wings', 'Turkey', 4800, 4.6, 'Massive turkey wings, grilled till crispy and golden.', 'turkey-bbq', NULL),
-('Spicy Goat Chops', 'Asun', 7000, 4.8, 'Thick cut goat chops grilled over wood fire.', 'asun-special', 'New');
+INSERT INTO public.menu_items (name, price, rating, "desc", image, badge) VALUES
+('Special Lagos Asun', 4500, 4.9, 'Fiery goat meat, hand-cut and slow grilled with scotch bonnets.', 'asun-special', 'Best Seller'),
+('Flame BBQ Chicken', 6500, 4.8, 'Half chicken marinated in house spices for 24 hours.', 'bbq-chicken', 'Popular'),
+('Premium Grilled Catfish', 8500, 5.0, 'Whole point-and-kill catfish, expertly seasoned.', 'catfish-bbq', 'Fresh'),
+('Suya Spiced Beef BBQ', 5500, 4.7, 'Tender beef chunks with yaji spice and grilled onions.', 'beef-bbq', NULL),
+('Signature Turkey Wings', 4800, 4.6, 'Massive turkey wings, grilled till crispy and golden.', 'turkey-bbq', NULL),
+('Spicy Goat Chops', 7000, 4.8, 'Thick cut goat chops grilled over wood fire.', 'asun-special', 'New');
 
 -- ==========================================
 -- SEED SITE SETTINGS

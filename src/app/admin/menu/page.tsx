@@ -20,7 +20,6 @@ interface MenuItem {
   name: string;
   desc: string;
   price: number;
-  category: string;
   rating: number;
   badge: string | null;
   image: string;
@@ -30,21 +29,13 @@ interface MenuItemFormData {
   name: string;
   desc: string;
   price: number;
-  category: string;
   rating: number;
   badge: string;
   image: string;
 }
 
-interface Category {
-  id: number;
-  name: string;
-  image: string;
-}
-
 export default function MenuPage() {
   const [items, setItems] = useState<MenuItem[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
@@ -56,7 +47,6 @@ export default function MenuPage() {
     name: '',
     desc: '',
     price: 0,
-    category: '',
     rating: 5.0,
     badge: '',
     image: '',
@@ -76,30 +66,12 @@ export default function MenuPage() {
     setIsLoading(false);
   };
 
-  const fetchCategories = async () => {
-    const { data, error } = await supabase.from('categories').select('*').order('id', { ascending: true });
-    if (error) {
-      toast({ title: 'Error', description: 'Failed to fetch categories.', variant: 'destructive' });
-      setCategories([]);
-    } else {
-      setCategories(data || []);
-    }
-  };
-
   useEffect(() => {
     fetchItems();
-    fetchCategories();
   }, []);
 
-  useEffect(() => {
-    if (!formData.category && categories.length > 0) {
-      setFormData((prev) => ({ ...prev, category: categories[0].name }));
-    }
-  }, [categories, formData.category]);
-
   const filteredItems = items.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.category.toLowerCase().includes(searchTerm.toLowerCase())
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAddItem = () => {
@@ -109,7 +81,6 @@ export default function MenuPage() {
       name: '',
       desc: '',
       price: 0,
-      category: 'Meat',
       rating: 5.0,
       badge: '',
       image: '',
@@ -124,7 +95,6 @@ export default function MenuPage() {
       name: item.name,
       desc: item.desc || '',
       price: item.price,
-      category: item.category,
       rating: item.rating,
       badge: item.badge || '',
       image: item.image || '',
@@ -171,7 +141,6 @@ export default function MenuPage() {
       name: formData.name,
       desc: formData.desc,
       price: formData.price,
-      category: formData.category,
       rating: formData.rating,
       badge: formData.badge || null,
       image: imageUrl,
@@ -301,10 +270,6 @@ export default function MenuPage() {
                         <p className="text-slate-500">Price</p>
                         <p className="font-bold">₦{Number(item.price).toLocaleString()}</p>
                       </div>
-                      <div>
-                        <p className="text-slate-500">Category</p>
-                        <p className="font-bold">{item.category}</p>
-                      </div>
                     </div>
                   </div>
                 ))}
@@ -317,7 +282,6 @@ export default function MenuPage() {
                     <TableRow>
                       <TableHead>Image</TableHead>
                       <TableHead>Item</TableHead>
-                      <TableHead>Category</TableHead>
                       <TableHead>Price</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -337,11 +301,6 @@ export default function MenuPage() {
                             <p className="font-medium text-slate-900">{item.name}</p>
                             <p className="text-sm text-slate-500">{item.desc}</p>
                           </div>
-                        </TableCell>
-                        <TableCell>
-                           <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-slate-100 text-slate-700">
-                             {item.category}
-                           </span>
                         </TableCell>
                         <TableCell className="font-medium">₦{Number(item.price).toLocaleString()}</TableCell>
                         <TableCell className="text-right">
@@ -462,21 +421,6 @@ export default function MenuPage() {
                   onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                   placeholder="15000"
                 />
-              </div>
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                  <SelectTrigger id="category">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(categories.length > 0 ? categories.map((cat) => cat.name) : ['Asun', 'Chicken', 'Fish', 'Beef', 'Turkey', 'Soup', 'Sides', 'Drinks']).map((categoryName) => (
-                      <SelectItem key={categoryName} value={categoryName}>
-                        {categoryName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
             </div>
 

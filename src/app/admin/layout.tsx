@@ -13,7 +13,6 @@ const sidebarItems = [
   { href: '/admin', icon: Home, label: 'Dashboard' },
   { href: '/admin/orders', icon: ShoppingCart, label: 'Orders' },
   { href: '/admin/menu', icon: UtensilsCrossed, label: 'Menu Items' },
-  { href: '/admin/categories', icon: Tag, label: 'Categories' },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 

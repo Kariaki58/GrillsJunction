@@ -26,31 +26,23 @@ const stats = [
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find(img => img.id === 'hero-bg')
-  const [categories, setCategories] = useState<Category[]>([])
-  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
+  const [featuredItems, setFeaturedItems] = useState<any[]>([])
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(defaultSiteSettings)
   const supabase = createClient()
 
   useEffect(() => {
-    const fetchCounts = async () => {
-      const [{ data: categoriesData }, { data: menuData, error }] = await Promise.all([
-        supabase.from('categories').select('*').order('id', { ascending: true }),
-        supabase.from('menu_items').select('category'),
-      ])
+    const fetchItems = async () => {
+      const { data, error } = await supabase
+        .from('menu_items')
+        .select('*')
+        .limit(4)
+        .order('id', { ascending: true })
 
-      if (categoriesData) {
-        setCategories(categoriesData)
-      }
-
-      if (!error && menuData) {
-        const counts: Record<string, number> = {}
-        menuData.forEach((item) => {
-          counts[item.category] = (counts[item.category] || 0) + 1
-        })
-        setCategoryCounts(counts)
+      if (!error && data) {
+        setFeaturedItems(data)
       }
     }
-    fetchCounts()
+    fetchItems()
   }, [])
 
   useEffect(() => {
@@ -66,8 +58,6 @@ export default function Home() {
 
     loadSiteSettings()
   }, [])
-
-  const categoryCards = categories
 
   return (
     <div className="overflow-hidden">
@@ -118,8 +108,8 @@ export default function Home() {
     </div> */}
   </section>
 
-  {/* Featured Categories */}
-  {categoryCards.length > 0 && (
+  {/* Featured Menu Items */}
+  {featuredItems.length > 0 && (
   <section className="py-24 px-4 bg-background">
     <div className="max-w-7xl mx-auto">
       <div className="flex items-end justify-between mb-12">
@@ -133,37 +123,35 @@ export default function Home() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-        {categoryCards.map((cat, idx) => {
-          const categoryName = cat.name;
-          const count = categoryCounts[categoryName] || 0;
-          const imageValue = cat.image || '';
+        {featuredItems.map((item, idx) => {
+          const imageValue = item.image || '';
           const imageSrc = imageValue.startsWith('http')
             ? imageValue
             : PlaceHolderImages.find(i => i.id === imageValue)?.imageUrl || '';
           return (
             <motion.div
-              key={categoryName}
+              key={item.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               viewport={{ once: true }}
             >
               <Link
-                href={`/menu?category=${encodeURIComponent(categoryName)}`}
+                href="/menu"
                 className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-3xl"
               >
                 <div className="relative aspect-[3/4] rounded-3xl overflow-hidden mb-4">
                   <Image
                     src={imageSrc}
-                    alt={cat.name}
+                    alt={item.name}
                     fill
                     className="object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
                   <div className="absolute bottom-6 left-6">
-                    <h3 className="text-xl font-bold mb-1 text-white">{(cat as any).displayName || cat.name}</h3>
+                    <h3 className="text-xl font-bold mb-1 text-white">{item.name}</h3>
                     <p className="text-xs text-white/60">
-                      {count} {count === 1 ? 'item' : 'items'}
+                      ₦{Number(item.price).toLocaleString()}
                     </p>
                   </div>
                 </div>
