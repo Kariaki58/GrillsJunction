@@ -4,7 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Flame, Eye, EyeOff, LogIn, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, LogIn, ArrowRight } from 'lucide-react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -78,9 +79,15 @@ export default function LoginPage() {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-              className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-amber-600 mb-4 shadow-lg shadow-primary/30"
+              className="flex justify-center mb-6"
             >
-              <Flame className="w-8 h-8 text-white" />
+              <Image
+                src="/logo.png"
+                alt="grillsJunction"
+                width={200}
+                height={60}
+                className="h-12 w-auto object-contain brightness-0 invert"
+              />
             </motion.div>
             <h1 className="text-2xl sm:text-3xl font-headline font-bold text-white mb-2">
               Welcome Back
