@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Flame, Clock, Truck, ShieldCheck, ArrowRight, Star } from 'lucide-react'
+import { Flame, Clock, Truck, ShieldCheck, ArrowRight, Star, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PlaceHolderImages } from '@/lib/placeholder-images'
 import { createClient } from '@/lib/supabase/client'
 import { defaultSiteSettings, type SiteSettings } from '@/lib/site-settings'
+import { useCart } from '@/context/cart-context'
+import { useToast } from '@/hooks/use-toast'
 
 interface Category {
   id: number;
@@ -27,8 +29,24 @@ const stats = [
 export default function Home() {
   const heroImage = PlaceHolderImages.find(img => img.id === 'hero-bg')
   const [featuredItems, setFeaturedItems] = useState<any[]>([])
+  const [expandedDescId, setExpandedDescId] = useState<number | null>(null)
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(defaultSiteSettings)
   const supabase = createClient()
+  const { addItem } = useCart()
+  const { toast } = useToast()
+
+  const handleAddToCart = (item: any) => {
+    addItem({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+    });
+    toast({
+      title: 'Added to cart',
+      description: `${item.name} — ₦${Number(item.price).toLocaleString()}`,
+    });
+  };
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -128,6 +146,10 @@ export default function Home() {
           const imageSrc = imageValue.startsWith('http')
             ? imageValue
             : PlaceHolderImages.find(i => i.id === imageValue)?.imageUrl || '';
+          const isExpanded = expandedDescId === item.id;
+          const desc = item.desc || '';
+          const shouldTruncate = desc.length > 35;
+          const displayDesc = (isExpanded || !shouldTruncate) ? desc : desc.slice(0, 35) + '...';
           return (
             <motion.div
               key={item.id}
@@ -138,21 +160,57 @@ export default function Home() {
             >
               <Link
                 href="/menu"
-                className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-3xl"
+                className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 h-full"
               >
-                <div className="relative aspect-[3/4] rounded-3xl overflow-hidden mb-4">
-                  <Image
-                    src={imageSrc}
-                    alt={item.name}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
-                  <div className="absolute bottom-6 left-6">
-                    <h3 className="text-xl font-bold mb-1 text-white">{item.name}</h3>
-                    <p className="text-xs text-white/60">
-                      ₦{Number(item.price).toLocaleString()}
+                <div className="glass-card rounded-[2rem] overflow-hidden flex flex-col h-full shadow-lg border-border group-hover:border-primary/20 transition-all duration-500 bg-white dark:bg-slate-900">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-slate-800">
+                    <Image
+                      src={imageSrc}
+                      alt={item.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    {item.badge && (
+                      <div className="absolute top-4 left-4">
+                        <Badge className="bg-primary text-white border-none px-3 py-1 font-bold">
+                          {item.badge}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6 flex-1 flex flex-col">
+                    <h3 className="text-xl font-bold mb-2 transition-colors group-hover:text-primary">{item.name}</h3>
+                    <p className="text-sm text-muted-foreground mb-6">
+                      {displayDesc}
+                      {shouldTruncate && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setExpandedDescId(isExpanded ? null : item.id);
+                          }}
+                          className="text-primary font-bold ml-1 hover:underline inline-block"
+                        >
+                          {isExpanded ? 'See less' : 'See more'}
+                        </button>
+                      )}
                     </p>
+                    <div className="mt-auto flex items-center justify-between">
+                      <div>
+                        <span className="text-xs text-muted-foreground block font-bold uppercase">Price</span>
+                        <span className="text-xl font-bold">₦{Number(item.price).toLocaleString()}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAddToCart(item);
+                        }}
+                        className="w-12 h-12 rounded-2xl bg-primary hover:bg-primary/90 text-white p-0 shadow-lg shadow-primary/20"
+                        aria-label={`Add ${item.name} to cart`}
+                      >
+                        <Plus className="w-6 h-6" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </Link>
