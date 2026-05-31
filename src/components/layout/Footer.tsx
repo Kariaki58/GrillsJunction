@@ -20,7 +20,7 @@ export function Footer() {
               />
             </Link>
             <p className="text-sm md:text-base leading-relaxed text-stone-400 max-w-md">
-              Experience the authentic taste of Lagos with our premium BBQ and grilled selections. Bringing fiery flavor, luxury, and quality straight to your door.
+              Freshly grilled BBQ, juicy meats, and bold flavors made to satisfy every craving. Delivered hot and ready to enjoy.
             </p>
           </div>
 
