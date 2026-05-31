@@ -106,7 +106,7 @@ export default function SignupPage() {
                 alt="grillsJunction"
                 width={200}
                 height={60}
-                className="h-12 w-auto object-contain brightness-0 invert"
+                className="h-12 w-auto object-contain"
               />
             </motion.div>
             <h1 className="text-2xl sm:text-3xl font-headline font-bold text-white mb-2">

@@ -16,7 +16,7 @@ export function Footer() {
                 alt="grillsJunction"
                 width={200}
                 height={60}
-                className="h-12 w-auto object-contain brightness-0 invert"
+                className="h-12 w-auto object-contain"
               />
             </Link>
             <p className="text-sm md:text-base leading-relaxed text-stone-400 max-w-md">
