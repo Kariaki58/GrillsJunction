@@ -17,7 +17,6 @@ import { DELIVERY_FEE } from '@/lib/menu';
 import { formatNaira } from '@/lib/format';
 import { generateTrackingId, saveOrder, type FulfillmentType } from '@/lib/orders';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { createClient } from '@/lib/supabase/client';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -68,9 +67,9 @@ export default function CheckoutPage() {
     setSubmitting(true);
 
     const trackingId = generateTrackingId();
-    const supabase = createClient();
+    console.log('[Checkout] ▶ Starting order placement — trackingId:', trackingId);
 
-    const orderData = {
+    const orderPayload = {
       tracking_id: trackingId,
       customer_name: fullName.trim(),
       customer_phone: phone.trim(),
@@ -83,38 +82,45 @@ export default function CheckoutPage() {
       delivery_fee: deliveryFee,
       total,
       payment_confirmed: true,
-      status: 'pending'
+      status: 'pending',
+      items: items.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        qty: item.qty,
+        image: item.image,
+      })),
     };
 
-    const { data: orderResult, error: orderError } = await supabase
-      .from('orders')
-      .insert([orderData])
-      .select('id')
-      .single();
+    console.log('[Checkout] 📦 Sending payload to /api/orders:', JSON.stringify(orderPayload, null, 2));
 
-    if (orderError || !orderResult) {
-      console.error('Error saving order:', orderError);
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload),
+      });
+
+      console.log('[Checkout] 📡 API response status:', res.status);
+
+      const data = await res.json();
+      console.log('[Checkout] 📡 API response body:', JSON.stringify(data, null, 2));
+
+      if (!res.ok || !data.success) {
+        console.error('[Checkout] ❌ Order failed:', data.error || data);
+        setSubmitting(false);
+        return;
+      }
+
+      if (data.warning) {
+        console.warn('[Checkout] ⚠️ Order warning:', data.warning);
+      }
+
+      console.log('[Checkout] ✅ Order created — orderId:', data.orderId);
+    } catch (err) {
+      console.error('[Checkout] 💥 Network/fetch error:', err);
       setSubmitting(false);
       return;
-    }
-
-    const orderId = orderResult.id;
-    const orderItemsData = items.map(item => ({
-      order_id: orderId,
-      menu_item_id: item.id,
-      name: item.name,
-      price: item.price,
-      quantity: item.qty,
-      image: item.image
-    }));
-
-    const { error: itemsError } = await supabase
-      .from('order_items')
-      .insert(orderItemsData);
-
-    if (itemsError) {
-      console.error('Error saving order items:', itemsError);
-      // Decide if you want to abort or continue
     }
 
     // Save locally for quick retrieval in confirmation page
@@ -136,6 +142,7 @@ export default function CheckoutPage() {
     };
     saveOrder(localOrder);
 
+    console.log('[Checkout] 🎉 Order complete — redirecting to confirmation');
     setIsSuccess(true);
     clearCart();
     router.push(`/order/confirmation?tracking=${encodeURIComponent(trackingId)}`);
