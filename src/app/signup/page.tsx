@@ -150,7 +150,7 @@ export default function SignupPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@grillsjunction.com"
+                placeholder="hello@example.com"
                 required
                 className="h-12 rounded-xl bg-white/[0.06] border-white/[0.08] text-white placeholder:text-white/30 focus:border-primary focus:ring-primary/30 transition-all"
               />
