@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye, Search, Loader2 } from 'lucide-react';
+import { Eye, Search, Loader2, ChevronLeft, ChevronRight, XCircle, CheckCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -60,44 +60,83 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [stats, setStats] = useState({ total: 0, pending: 0, confirmed: 0, preparing: 0, delivered: 0, totalRevenue: 0 });
+  const ITEMS_PER_PAGE = 10;
+  
   const supabase = createClient();
   const { toast } = useToast();
 
+  const fetchStats = async () => {
+    const { data, error } = await supabase.from('orders').select('status, total');
+    if (!error && data) {
+      setStats({
+        total: data.length,
+        pending: data.filter(o => o.status === 'pending').length,
+        confirmed: data.filter(o => o.status === 'confirmed').length,
+        preparing: data.filter(o => o.status === 'preparing').length,
+        delivered: data.filter(o => o.status === 'delivered').length,
+        totalRevenue: data.reduce((sum, o) => sum + (Number(o.total) || 0), 0),
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, debouncedSearch]);
+
   const fetchOrders = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
+    let query = supabase
       .from('orders')
       .select(`
         *,
         order_items (*)
-      `)
-      .order('created_at', { ascending: false });
+      `, { count: 'exact' });
+
+    if (statusFilter !== 'all') {
+      query = query.eq('status', statusFilter);
+    }
+
+    if (debouncedSearch) {
+      query = query.or(`tracking_id.ilike.%${debouncedSearch}%,customer_name.ilike.%${debouncedSearch}%,customer_phone.ilike.%${debouncedSearch}%`);
+    }
+
+    const from = (currentPage - 1) * ITEMS_PER_PAGE;
+    const to = from + ITEMS_PER_PAGE - 1;
+
+    query = query.order('created_at', { ascending: false }).range(from, to);
+
+    const { data, count, error } = await query;
     
     if (error) {
       toast({ title: 'Error fetching orders', description: error.message, variant: 'destructive' });
     } else {
       setOrders(data as Order[] || []);
+      if (count !== null) {
+        setTotalPages(Math.ceil(count / ITEMS_PER_PAGE) || 1);
+      }
     }
     setIsLoading(false);
   };
 
   useEffect(() => {
     fetchOrders();
-  }, []);
-
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch =
-      (order.tracking_id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (order.customer_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (order.customer_phone || '').includes(searchTerm);
-
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
+  }, [currentPage, statusFilter, debouncedSearch]);
 
   const handleViewOrder = (order: Order) => {
     setSelectedOrder(order);
@@ -126,14 +165,22 @@ export default function OrdersPage() {
         status: newStatus as Order['status'],
       });
     }
+    fetchStats();
     toast({ title: 'Success', description: 'Order status updated.' });
   };
 
   const handlePaymentConfirmToggle = async (orderId: string, currentStatus: boolean) => {
     const newStatus = !currentStatus;
+    const updates: any = { payment_confirmed: newStatus };
+    const order = orders.find(o => o.id === orderId);
+    
+    if (newStatus && order?.status === 'pending') {
+      updates.status = 'confirmed';
+    }
+
     const { error } = await supabase
       .from('orders')
-      .update({ payment_confirmed: newStatus })
+      .update(updates)
       .eq('id', orderId);
 
     if (error) {
@@ -141,27 +188,47 @@ export default function OrdersPage() {
       return;
     }
 
-    setOrders(orders.map(order =>
-      order.id === orderId
-        ? { ...order, payment_confirmed: newStatus }
-        : order
+    setOrders(orders.map(o =>
+      o.id === orderId
+        ? { ...o, payment_confirmed: newStatus, status: updates.status || o.status }
+        : o
     ));
     if (selectedOrder && selectedOrder.id === orderId) {
       setSelectedOrder({
         ...selectedOrder,
         payment_confirmed: newStatus,
+        status: updates.status || selectedOrder.status,
       });
     }
+    if (updates.status) fetchStats();
     toast({ title: 'Success', description: 'Payment status updated.' });
   };
 
-  const stats = {
-    total: orders.length,
-    pending: orders.filter(o => o.status === 'pending').length,
-    confirmed: orders.filter(o => o.status === 'confirmed').length,
-    preparing: orders.filter(o => o.status === 'preparing').length,
-    delivered: orders.filter(o => o.status === 'delivered').length,
-    totalRevenue: orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0),
+  const handleDeclineOrder = async (orderId: string) => {
+    const { error } = await supabase
+      .from('orders')
+      .update({ status: 'cancelled', payment_confirmed: false })
+      .eq('id', orderId);
+
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to decline order.', variant: 'destructive' });
+      return;
+    }
+
+    setOrders(orders.map(o =>
+      o.id === orderId
+        ? { ...o, status: 'cancelled', payment_confirmed: false }
+        : o
+    ));
+    if (selectedOrder && selectedOrder.id === orderId) {
+      setSelectedOrder({
+        ...selectedOrder,
+        status: 'cancelled',
+        payment_confirmed: false,
+      });
+    }
+    fetchStats();
+    toast({ title: 'Success', description: 'Order declined.' });
   };
 
   return (
@@ -246,7 +313,7 @@ export default function OrdersPage() {
             <>
               {/* Mobile Cards View */}
               <div className="md:hidden space-y-3">
-                {filteredOrders.map(order => (
+                {orders.map(order => (
                   <div key={order.id} className="p-3 border border-slate-200 rounded-lg">
                     <div className="flex justify-between items-start mb-2">
                       <div>
@@ -300,7 +367,7 @@ export default function OrdersPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredOrders.map(order => (
+                    {orders.map(order => (
                       <TableRow key={order.id}>
                         <TableCell className="font-medium">{order.tracking_id}</TableCell>
                         <TableCell>
@@ -339,9 +406,38 @@ export default function OrdersPage() {
                 </Table>
               </div>
 
-              {filteredOrders.length === 0 && (
+              {orders.length === 0 && (
                 <div className="text-center py-8 text-slate-500">
                   No orders found.
+                </div>
+              )}
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <p className="text-sm text-slate-500">
+                    Page {currentPage} of {totalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1 || isLoading}
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages || isLoading}
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
                 </div>
               )}
             </>
@@ -433,13 +529,34 @@ export default function OrdersPage() {
                   {/* Payment Info */}
                   <div>
                     <h3 className="font-semibold mb-3 text-sm text-slate-500">Payment Confirmed</h3>
-                    <Button 
-                      variant={selectedOrder.payment_confirmed ? 'default' : 'outline'}
-                      className={selectedOrder.payment_confirmed ? 'w-full' : 'w-full text-yellow-600'}
-                      onClick={() => handlePaymentConfirmToggle(selectedOrder.id, selectedOrder.payment_confirmed)}
-                    >
-                      {selectedOrder.payment_confirmed ? '✓ Confirmed' : 'Confirm Payment'}
-                    </Button>
+                    {!selectedOrder.payment_confirmed && selectedOrder.status === 'pending' ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button 
+                          variant="default"
+                          onClick={() => handlePaymentConfirmToggle(selectedOrder.id, false)}
+                          className="w-full gap-1"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                          Confirm
+                        </Button>
+                        <Button 
+                          variant="destructive"
+                          onClick={() => handleDeclineOrder(selectedOrder.id)}
+                          className="w-full gap-1"
+                        >
+                          <XCircle className="h-4 w-4" />
+                          Decline
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button 
+                        variant={selectedOrder.payment_confirmed ? 'default' : 'outline'}
+                        className={selectedOrder.payment_confirmed ? 'w-full' : 'w-full text-yellow-600'}
+                        onClick={() => handlePaymentConfirmToggle(selectedOrder.id, selectedOrder.payment_confirmed)}
+                      >
+                        {selectedOrder.payment_confirmed ? '✓ Confirmed' : 'Confirm Payment'}
+                      </Button>
+                    )}
                   </div>
                 </div>
 
