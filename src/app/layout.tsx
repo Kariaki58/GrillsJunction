@@ -7,6 +7,7 @@ import { FloatingWhatsApp } from '@/components/ui/FloatingWhatsApp';
 import { Providers } from '@/components/providers';
 import { NavigationWrapper } from '@/components/layout/NavigationWrapper';
 import { MainWrapper } from '@/components/layout/MainWrapper';
+import { Footer } from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
   title: 'grillsJunction | Lagos\' Premium BBQ Experience',
@@ -34,6 +35,7 @@ export default function RootLayout({
           <MainWrapper>
             {children}
           </MainWrapper>
+          <Footer />
           <NavigationWrapper>
             <MobileNav />
             <FloatingWhatsApp />
