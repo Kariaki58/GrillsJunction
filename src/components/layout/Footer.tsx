@@ -83,13 +83,13 @@ export function Footer() {
 
         </div>
 
-        <div className="mt-16 pt-8 border-t border-stone-800 text-center text-sm text-stone-500 flex flex-col md:flex-row justify-between items-center gap-4">
+        {/* <div className="mt-16 pt-8 border-t border-stone-800 text-center text-sm text-stone-500 flex flex-col md:flex-row justify-between items-center gap-4">
           <p>&copy; {new Date().getFullYear()} grillsJunction. All rights reserved.</p>
           <div className="flex gap-4">
             <Link href="#" className="hover:text-stone-300 transition-colors">Privacy Policy</Link>
             <Link href="#" className="hover:text-stone-300 transition-colors">Terms of Service</Link>
           </div>
-        </div>
+        </div> */}
       </div>
     </footer>
   );

@@ -35,7 +35,9 @@ export default function RootLayout({
           <MainWrapper>
             {children}
           </MainWrapper>
-          <Footer />
+          <NavigationWrapper>
+            <Footer />
+          </NavigationWrapper>
           <NavigationWrapper>
             <MobileNav />
             <FloatingWhatsApp />
