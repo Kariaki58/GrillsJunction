@@ -18,9 +18,9 @@ interface Category {
 }
 
 const stats = [
-  { label: 'Happy Customers', value: '15k+' },
-  { label: 'Grill Sessions', value: '250k' },
-  { label: 'Lagos Locations', value: '3' },
+  { label: 'Happy Customers', value: '2k+' },
+  { label: 'Orders Served', value: '8k+' },
+  { label: 'Lagos Location', value: '1' },
   { label: 'Avg Delivery Time', value: '35m' },
 ]
 

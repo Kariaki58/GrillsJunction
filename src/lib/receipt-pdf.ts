@@ -67,7 +67,7 @@ export async function downloadOrderReceipt(order: Order): Promise<void> {
     ['Tracking ID', order.trackingId],
     ['Date', formatReceiptDate(order.createdAt)],
     ['Fulfillment', order.fulfillment.type === 'delivery' ? 'Delivery' : 'Pickup'],
-    ['Payment', 'Transfer — OPay'],
+    ['Payment', 'OPay Transfer'],
   ];
   orderMeta.forEach(([label, value]) => {
     doc.setTextColor(120, 120, 120);
