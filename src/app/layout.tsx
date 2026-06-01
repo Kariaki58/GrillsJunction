@@ -8,6 +8,7 @@ import { Providers } from '@/components/providers';
 import { NavigationWrapper } from '@/components/layout/NavigationWrapper';
 import { MainWrapper } from '@/components/layout/MainWrapper';
 import { Footer } from '@/components/layout/Footer';
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: 'grillsJunction | Lagos\' Premium BBQ Experience',
@@ -34,6 +35,7 @@ export default function RootLayout({
           </NavigationWrapper>
           <MainWrapper>
             {children}
+            
           </MainWrapper>
           <NavigationWrapper>
             <Footer />
@@ -43,6 +45,7 @@ export default function RootLayout({
             <FloatingWhatsApp />
           </NavigationWrapper>
         </Providers>
+        <Analytics/>
       </body>
     </html>
   );

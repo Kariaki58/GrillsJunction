@@ -1,9 +1,17 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { WHATSAPP_NUMBER } from '@/lib/payment';
 
 export function FloatingWhatsApp() {
+  const pathname = usePathname();
+
+  // Hidden on the home page (the menu/order CTAs already cover it there).
+  if (pathname === '/') {
+    return null;
+  }
+
   return (
     <a
       href={`https://wa.me/${WHATSAPP_NUMBER}`}
