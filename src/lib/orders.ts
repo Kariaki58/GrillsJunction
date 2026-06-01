@@ -24,6 +24,7 @@ export interface Order {
   subtotal: number;
   total: number;
   paymentConfirmed: boolean;
+  riderPhone?: string | null;
 }
 
 const ORDERS_KEY = 'grillsjunction-orders';

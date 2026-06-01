@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye, Search, Loader2, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
+import { Eye, Search, Loader2, ChevronLeft, ChevronRight, CheckCircle, Phone } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -32,6 +32,7 @@ interface Order {
   total: number;
   status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'out_for_delivery' | 'delivered' | 'cancelled';
   payment_confirmed: boolean;
+  rider_phone: string | null;
   created_at: string;
   order_items: OrderItem[];
 }
@@ -66,6 +67,8 @@ export default function OrdersPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [riderPhone, setRiderPhone] = useState('');
+  const [savingRider, setSavingRider] = useState(false);
   const [stats, setStats] = useState({ total: 0, pending: 0, confirmed: 0, preparing: 0, delivered: 0, totalRevenue: 0 });
   const ITEMS_PER_PAGE = 10;
   
@@ -143,7 +146,32 @@ export default function OrdersPage() {
 
   const handleViewOrder = (order: Order) => {
     setSelectedOrder(order);
+    setRiderPhone(order.rider_phone || '');
     setDialogOpen(true);
+  };
+
+  const handleSaveRiderPhone = async (orderId: string) => {
+    const trimmed = riderPhone.trim();
+    setSavingRider(true);
+    const { error } = await supabase
+      .from('orders')
+      .update({ rider_phone: trimmed || null })
+      .eq('id', orderId);
+    setSavingRider(false);
+
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to save rider phone number.', variant: 'destructive' });
+      return;
+    }
+
+    const newValue = trimmed || null;
+    setOrders(orders.map(order =>
+      order.id === orderId ? { ...order, rider_phone: newValue } : order
+    ));
+    if (selectedOrder && selectedOrder.id === orderId) {
+      setSelectedOrder({ ...selectedOrder, rider_phone: newValue });
+    }
+    toast({ title: 'Success', description: 'Rider phone number saved.' });
   };
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
@@ -520,6 +548,36 @@ export default function OrdersPage() {
                     </p>
                   </div>
                 </div>
+
+                {/* Rider contact — shown when the order is out for delivery */}
+                {selectedOrder.status === 'out_for_delivery' && (
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold mb-1 flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-purple-600" />
+                      Delivery Rider
+                    </h3>
+                    <p className="text-xs text-slate-400 mb-3">
+                      Add the rider&apos;s phone number so the customer can call them while tracking.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Input
+                        type="tel"
+                        placeholder="e.g. 0803 123 4567"
+                        value={riderPhone}
+                        onChange={(e) => setRiderPhone(e.target.value)}
+                        className="flex-1"
+                      />
+                      <Button
+                        onClick={() => handleSaveRiderPhone(selectedOrder.id)}
+                        disabled={savingRider || riderPhone.trim() === (selectedOrder.rider_phone || '')}
+                        className="gap-2 shrink-0"
+                      >
+                        {savingRider ? <Loader2 className="h-4 w-4 animate-spin" /> : <Phone className="h-4 w-4" />}
+                        Save Rider
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Order Summary */}
                 <div className="border-t pt-4">

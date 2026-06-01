@@ -12,6 +12,7 @@ import {
   Clock,
   Download,
   Loader2,
+  Phone,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -71,6 +72,7 @@ interface ServerOrder {
   total: number | string;
   payment_confirmed: boolean;
   status: string;
+  rider_phone: string | null;
   order_items: ServerOrderItem[];
 }
 
@@ -99,6 +101,7 @@ function mapServerOrder(row: ServerOrder): Order {
     subtotal: Number(row.subtotal),
     total: Number(row.total),
     paymentConfirmed: row.payment_confirmed,
+    riderPhone: row.rider_phone,
   };
 }
 
@@ -290,6 +293,32 @@ function TrackContent() {
                 </>
               )}
             </div>
+
+            {/* Call the rider — shown once the order is out for delivery and a rider phone is set */}
+            {order.paymentConfirmed && status === 'out_for_delivery' && order.riderPhone && (
+              <div className="glass-card rounded-[2rem] p-6 border-border mb-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <Truck className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-bold">Your order is on its way</p>
+                    <p className="text-sm text-muted-foreground">
+                      Call your rider on <span className="font-mono">{order.riderPhone}</span>
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  asChild
+                  className="w-full h-12 rounded-full bg-primary font-bold"
+                >
+                  <a href={`tel:${order.riderPhone.replace(/\s+/g, '')}`}>
+                    <Phone className="w-5 h-5 mr-2" />
+                    Call Rider
+                  </a>
+                </Button>
+              </div>
+            )}
 
             {/* Receipt — always available while tracking */}
             <div className="glass-card rounded-[2rem] p-6 border-border mb-8">
