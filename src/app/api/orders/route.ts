@@ -10,13 +10,15 @@ import {
 
 const FROM_EMAIL = 'GrillsJunction <admin@grillsjunction.com.ng>';
 
-function adminRecipient(): string {
-  if (process.env.CONTACT_EMAIL) return process.env.CONTACT_EMAIL;
-  const first = (process.env.ADMIN_EMAILS || '')
+function adminRecipients(): string[] {
+  const emails = (process.env.ADMIN_EMAILS || '')
     .split(',')
-    .map((e) => e.trim())
-    .filter(Boolean)[0];
-  return first || 'admin@grillsjunction.com.ng';
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  // De-duplicate while preserving order.
+  const unique = Array.from(new Set(emails));
+  return unique.length > 0 ? unique : ['admin@grillsjunction.com.ng'];
 }
 
 // Sends the admin + customer order emails. Failures are logged but never block the order.
@@ -32,7 +34,7 @@ async function sendOrderEmails(data: OrderEmailData, customerEmail: string) {
   const results = await Promise.allSettled([
     resend.emails.send({
       from: FROM_EMAIL,
-      to: [adminRecipient()],
+      to: adminRecipients(),
       replyTo: customerEmail,
       subject: admin.subject,
       html: admin.html,
