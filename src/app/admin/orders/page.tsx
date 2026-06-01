@@ -73,7 +73,7 @@ export default function OrdersPage() {
   const { toast } = useToast();
 
   const fetchStats = async () => {
-    const { data, error } = await supabase.from('orders').select('status, total');
+    const { data, error } = await supabase.from('orders').select('status, total, payment_confirmed');
     if (!error && data) {
       setStats({
         total: data.length,
@@ -81,7 +81,10 @@ export default function OrdersPage() {
         confirmed: data.filter(o => o.status === 'confirmed').length,
         preparing: data.filter(o => o.status === 'preparing').length,
         delivered: data.filter(o => o.status === 'delivered').length,
-        totalRevenue: data.reduce((sum, o) => sum + (Number(o.total) || 0), 0),
+        // Revenue counts only orders whose payment has been confirmed.
+        totalRevenue: data
+          .filter(o => o.payment_confirmed)
+          .reduce((sum, o) => sum + (Number(o.total) || 0), 0),
       });
     }
   };

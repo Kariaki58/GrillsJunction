@@ -61,6 +61,7 @@ interface Order {
   tracking_id: string;
   total: number;
   status: string;
+  payment_confirmed: boolean;
   created_at: string;
   order_items: OrderItem[];
 }
@@ -124,32 +125,36 @@ export default function DashboardPage() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
+  // Only orders whose payment has been confirmed count toward money/sales metrics.
+  const paidOrders = orders.filter((o) => o.payment_confirmed);
+
   // ---- All-time business KPIs ----
-  const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
-  const totalOrders = orders.length;
-  const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+  const totalRevenue = paidOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+  const totalOrders = orders.length; // operational count — all orders
+  const paidOrderCount = paidOrders.length;
+  const avgOrderValue = paidOrderCount > 0 ? totalRevenue / paidOrderCount : 0;
   const pendingOrders = orders.filter((o) => o.status === 'pending').length;
   const deliveredOrders = orders.filter((o) => o.status === 'delivered').length;
 
-  // Today's performance
-  const todayOrders = orders.filter((o) => isToday(new Date(o.created_at)));
-  const todayRevenue = todayOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+  // Today's performance (confirmed payments only)
+  const todayPaidOrders = paidOrders.filter((o) => isToday(new Date(o.created_at)));
+  const todayRevenue = todayPaidOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
 
-  // Revenue for each of the last 7 days (fixed window, independent of the range selector)
+  // Revenue for each of the last 7 days (confirmed only, independent of the range selector)
   const last7Data = useMemo(() => {
     const days = eachDayOfInterval({ start: startOfDay(subDays(new Date(), 6)), end: new Date() });
     return days.map((d) => ({
       label: format(d, 'EEE'),
       revenue: orders
-        .filter((o) => isSameDay(new Date(o.created_at), d))
+        .filter((o) => o.payment_confirmed && isSameDay(new Date(o.created_at), d))
         .reduce((s, o) => s + (Number(o.total) || 0), 0),
     }));
   }, [orders]);
   const last7Total = last7Data.reduce((s, d) => s + d.revenue, 0);
 
-  // All-time best seller (by quantity)
+  // Best seller by quantity — confirmed (real) sales only
   const allItemStats: Record<string, number> = {};
-  orders.forEach((o) =>
+  paidOrders.forEach((o) =>
     o.order_items?.forEach((it) => {
       allItemStats[it.name] = (allItemStats[it.name] || 0) + it.quantity;
     })
@@ -173,7 +178,9 @@ export default function DashboardPage() {
       rangeStart = startOfDay(subDays(now, 6));
     }
 
-    const filtered = orders.filter((o) => new Date(o.created_at) >= rangeStart);
+    const filtered = orders.filter(
+      (o) => o.payment_confirmed && new Date(o.created_at) >= rangeStart
+    );
     const span = differenceInCalendarDays(now, rangeStart);
 
     let series: { label: string; revenue: number; orders: number }[];
@@ -238,7 +245,7 @@ export default function DashboardPage() {
       title: "Today's Revenue",
       value: formatNairaShort(todayRevenue),
       full: formatNairaCompact(todayRevenue),
-      sub: `${todayOrders.length} order${todayOrders.length === 1 ? '' : 's'} today`,
+      sub: `${todayPaidOrders.length} paid order${todayPaidOrders.length === 1 ? '' : 's'} today`,
       icon: Sun,
       tint: 'bg-orange-100 text-orange-600',
     },
@@ -246,7 +253,7 @@ export default function DashboardPage() {
       title: 'Total Revenue',
       value: formatNairaShort(totalRevenue),
       full: formatNairaCompact(totalRevenue),
-      sub: 'All time',
+      sub: 'Confirmed payments',
       icon: DollarSign,
       tint: 'bg-green-100 text-green-600',
     },
@@ -262,7 +269,7 @@ export default function DashboardPage() {
       title: 'Avg Order Value',
       value: formatNairaShort(avgOrderValue),
       full: formatNairaCompact(Math.round(avgOrderValue)),
-      sub: 'Per order',
+      sub: 'Per paid order',
       icon: BarChart3,
       tint: 'bg-purple-100 text-purple-600',
     },
@@ -344,7 +351,7 @@ export default function DashboardPage() {
         <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
           <div>
             <CardTitle className="text-lg text-slate-900">Revenue · Last 7 Days</CardTitle>
-            <CardDescription className="text-slate-600">Daily revenue this past week</CardDescription>
+            <CardDescription className="text-slate-600">Confirmed daily revenue this past week</CardDescription>
           </div>
           <div className="text-right">
             <p className="text-xs text-slate-500">7-day total</p>
