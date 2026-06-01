@@ -10,23 +10,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Save, AlertTriangle } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { SiteSettings, defaultSiteSettings } from '@/lib/site-settings';
+import { useAuth } from '@/context/auth-context';
 
 interface AccountSettings {
-  businessName: string;
   email: string;
-  phone: string;
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
 }
 
 export default function SettingsPage() {
+  const { user } = useAuth();
   const [accountSettings, setAccountSettings] = useState<AccountSettings>({
-    businessName: 'GrillsJunction',
-    email: 'admin@grillsjunction.com',
-    phone: '+234 800 123 4567',
+    email: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
@@ -60,6 +58,12 @@ export default function SettingsPage() {
     loadSettings();
   }, [toast]);
 
+  useEffect(() => {
+    if (user?.email) {
+      setAccountSettings(prev => ({ ...prev, email: user.email ?? '' }));
+    }
+  }, [user?.email]);
+
   const handleAccountChange = (field: keyof AccountSettings, value: string) => {
     setAccountSettings(prev => ({ ...prev, [field]: value }));
     setAccountChanges(true);
@@ -70,12 +74,70 @@ export default function SettingsPage() {
     setSiteChanges(true);
   };
 
+  // Business name & phone live in site_settings but are edited from the Account tab.
+  const handleBusinessChange = (field: 'businessName' | 'phone', value: string) => {
+    setSiteSettings(prev => ({ ...prev, [field]: value }));
+    setAccountChanges(true);
+  };
+
   const handleSaveAccountSettings = async () => {
+    const { newPassword, confirmPassword, currentPassword, email } = accountSettings;
+
+    if (newPassword && newPassword !== confirmPassword) {
+      toast({
+        title: 'Passwords do not match',
+        description: 'Please make sure the new password and confirmation are identical.',
+      });
+      return;
+    }
+
     setLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setLoading(false);
-    setAccountChanges(false);
+    try {
+      // 1. Update login credentials (email / password) if they changed.
+      const wantsCredentialChange = Boolean(newPassword) || email !== (user?.email ?? '');
+      if (wantsCredentialChange) {
+        const res = await fetch('/api/auth/update-account', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, currentPassword, newPassword }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.error || 'Unable to update account.');
+        }
+      }
+
+      // 2. Persist business name & phone (stored in site_settings).
+      const siteRes = await fetch('/api/site-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(siteSettings),
+      });
+      const siteData = await siteRes.json();
+      if (!siteRes.ok) {
+        throw new Error(siteData?.error || 'Unable to update business details.');
+      }
+      setSiteSettings(siteData);
+
+      setAccountSettings(prev => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      }));
+      setAccountChanges(false);
+      toast({
+        title: 'Account updated',
+        description: 'Your account details have been saved successfully.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Save failed',
+        description: error instanceof Error ? error.message : 'Failed to save account details.',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSaveSiteSettings = async () => {
@@ -133,13 +195,13 @@ export default function SettingsPage() {
                   <Label htmlFor="businessName">Business Name</Label>
                   <Input
                     id="businessName"
-                    value={accountSettings.businessName}
-                    onChange={(e) => handleAccountChange('businessName', e.target.value)}
+                    value={siteSettings.businessName}
+                    onChange={(e) => handleBusinessChange('businessName', e.target.value)}
                     placeholder="Your business name"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">Login Email</Label>
                   <Input
                     id="email"
                     type="email"
@@ -147,14 +209,17 @@ export default function SettingsPage() {
                     onChange={(e) => handleAccountChange('email', e.target.value)}
                     placeholder="admin@example.com"
                   />
+                  <p className="text-xs text-slate-400 mt-1">
+                    Changing this requires your current password and an email confirmation.
+                  </p>
                 </div>
               </div>
               <div>
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input
                   id="phone"
-                  value={accountSettings.phone}
-                  onChange={(e) => handleAccountChange('phone', e.target.value)}
+                  value={siteSettings.phone}
+                  onChange={(e) => handleBusinessChange('phone', e.target.value)}
                   placeholder="+234 800 123 4567"
                 />
               </div>
@@ -344,6 +409,47 @@ export default function SettingsPage() {
                     value={siteSettings.minimumOrder}
                     onChange={(e) => handleSiteChange('minimumOrder', Number(e.target.value))}
                     placeholder="10000"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Bank / Payment Details</CardTitle>
+              <CardDescription>
+                Shown to customers at checkout for bank transfers
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="bankName">Bank Name</Label>
+                <Input
+                  id="bankName"
+                  value={siteSettings.bankName}
+                  onChange={(e) => handleSiteChange('bankName', e.target.value)}
+                  placeholder="e.g. OPay, GTBank, Access Bank"
+                />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <Label htmlFor="accountName">Account Name</Label>
+                  <Input
+                    id="accountName"
+                    value={siteSettings.accountName}
+                    onChange={(e) => handleSiteChange('accountName', e.target.value)}
+                    placeholder="Account holder name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="accountNumber">Account Number</Label>
+                  <Input
+                    id="accountNumber"
+                    inputMode="numeric"
+                    value={siteSettings.accountNumber}
+                    onChange={(e) => handleSiteChange('accountNumber', e.target.value)}
+                    placeholder="0123456789"
                   />
                 </div>
               </div>

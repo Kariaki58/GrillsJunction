@@ -29,7 +29,7 @@ export function Footer() {
             <h4 className="text-white font-bold text-lg font-heading tracking-wide uppercase">Quick Links</h4>
             <ul className="space-y-4 text-sm font-medium">
               <li>
-                <Link href="/menu" className="hover:text-primary transition-colors">Order Now</Link>
+                <Link href="/#menu" className="hover:text-primary transition-colors">Order Now</Link>
               </li>
               <li>
                 <Link href="/track" className="hover:text-primary transition-colors">Track Order</Link>

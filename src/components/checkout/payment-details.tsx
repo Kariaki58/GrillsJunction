@@ -1,15 +1,31 @@
 'use client';
 
-import { PAYMENT_DETAILS } from '@/lib/payment';
+import { useEffect, useState } from 'react';
 import { CopyButton } from '@/components/ui/copy-button';
-
-const rows = [
-  { label: 'Account number', value: PAYMENT_DETAILS.accountNumber },
-  { label: 'Bank', value: PAYMENT_DETAILS.bank },
-  { label: 'Account name', value: PAYMENT_DETAILS.accountName },
-] as const;
+import { defaultSiteSettings, type SiteSettings } from '@/lib/site-settings';
 
 export function PaymentDetails() {
+  const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const response = await fetch('/api/site-settings');
+        const data = await response.json();
+        setSettings(data ?? defaultSiteSettings);
+      } catch {
+        setSettings(defaultSiteSettings);
+      }
+    };
+    load();
+  }, []);
+
+  const rows = [
+    { label: 'Account number', value: settings.accountNumber },
+    { label: 'Bank', value: settings.bankName },
+    { label: 'Account name', value: settings.accountName },
+  ];
+
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">

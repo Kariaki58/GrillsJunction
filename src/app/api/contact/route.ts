@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     const recipient = process.env.CONTACT_EMAIL || 'admin@grillsjunction.com.ng';
 
     const { data, error } = await resend.emails.send({
-      from: 'GrillsJunction Contact <onboarding@resend.dev>',
+      from: 'GrillsJunction Contact <admin@grillsjunction.com.ng>',
       to: [recipient],
       replyTo: email,
       subject: `New Contact Form Submission: ${subject || 'General Inquiry'}`,

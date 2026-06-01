@@ -98,7 +98,7 @@ export default function CartPage() {
                   Your basket is empty!
                 </p>
                 <Button asChild className="rounded-full bg-primary text-white px-5 sm:px-6 md:px-8 text-sm sm:text-base">
-                  <Link href="/menu">Browse Menu</Link>
+                  <Link href="/#menu">Browse Menu</Link>
                 </Button>
               </div>
             )}

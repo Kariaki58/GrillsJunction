@@ -2,7 +2,16 @@ import { PAYMENT_DETAILS, WHATSAPP_NUMBER } from '@/lib/payment';
 import { formatNaira } from '@/lib/format';
 import type { Order } from '@/lib/orders';
 
-export function buildOrderWhatsAppMessage(order: Order): string {
+export interface BankDetails {
+  bank: string;
+  accountNumber: string;
+  accountName: string;
+}
+
+export function buildOrderWhatsAppMessage(
+  order: Order,
+  bank: BankDetails = PAYMENT_DETAILS
+): string {
   const lines = [
     'Hello grillsJunction! I have placed an order.',
     '',
@@ -33,7 +42,7 @@ export function buildOrderWhatsAppMessage(order: Order): string {
     `Delivery: ${formatNaira(order.deliveryFee)}`,
     `Total: ${formatNaira(order.total)}`,
     '',
-    `I have made payment via ${PAYMENT_DETAILS.bank} to ${PAYMENT_DETAILS.accountNumber} (${PAYMENT_DETAILS.accountName}).`,
+    `I have made payment via ${bank.bank} to ${bank.accountNumber} (${bank.accountName}).`,
     '',
     'Please confirm my order. Thank you!',
   );
@@ -41,7 +50,10 @@ export function buildOrderWhatsAppMessage(order: Order): string {
   return lines.join('\n');
 }
 
-export function getWhatsAppOrderUrl(order: Order): string {
-  const text = encodeURIComponent(buildOrderWhatsAppMessage(order));
+export function getWhatsAppOrderUrl(
+  order: Order,
+  bank: BankDetails = PAYMENT_DETAILS
+): string {
+  const text = encodeURIComponent(buildOrderWhatsAppMessage(order, bank));
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${text}`;
 }

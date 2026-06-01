@@ -80,7 +80,7 @@ export default function CheckoutPage() {
       subtotal,
       delivery_fee: deliveryFee,
       total,
-      payment_confirmed: true,
+      payment_confirmed: false,
       status: 'pending',
       items: items.map(item => ({
         id: item.id,
@@ -128,7 +128,7 @@ export default function CheckoutPage() {
       subtotal,
       deliveryFee,
       total,
-      paymentConfirmed: true,
+      paymentConfirmed: false,
     };
     saveOrder(localOrder);
 
@@ -151,7 +151,7 @@ export default function CheckoutPage() {
       <div className="pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-16 sm:pb-20 md:pb-24 px-3 sm:px-4 min-h-screen flex flex-col items-center justify-center text-center">
         <p className="text-muted-foreground text-base sm:text-lg mb-4 sm:mb-6">Your cart is empty.</p>
         <Button asChild className="rounded-full bg-primary text-sm sm:text-base">
-          <Link href="/menu">Browse Menu</Link>
+          <Link href="/#menu">Browse Menu</Link>
         </Button>
       </div>
     );

@@ -1,5 +1,6 @@
 export interface SiteSettings {
   businessName: string;
+  phone: string;
   siteTitle: string;
   siteDescription: string;
   address: string;
@@ -12,10 +13,14 @@ export interface SiteSettings {
   minimumOrder: number;
   maintenanceMode: boolean;
   maintenanceMessage: string;
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
 }
 
 export const defaultSiteSettings: SiteSettings = {
   businessName: 'GrillsJunction',
+  phone: '+234 800 123 4567',
   siteTitle: "Lagos' Favorite Spot for Premium BBQ & Grills",
   siteDescription: "Savor the rich flavors of our signature Asun, perfectly grilled Chicken, spicy Catfish, and other mouthwatering specialties. Prepared fresh, served hot, and crafted with passion because every meal should be memorable.",
   address: '123 Lekki Phase 1',
@@ -28,11 +33,15 @@ export const defaultSiteSettings: SiteSettings = {
   minimumOrder: 10000,
   maintenanceMode: false,
   maintenanceMessage: 'We are currently under maintenance. Please try again later.',
+  bankName: 'OPay',
+  accountName: 'Grillsjunction',
+  accountNumber: '6108713737',
 };
 
 export interface SiteSettingsRow {
   id: number;
   business_name: string;
+  phone: string;
   site_title: string;
   site_description: string;
   address: string;
@@ -45,6 +54,9 @@ export interface SiteSettingsRow {
   minimum_order: string | number;
   maintenance_mode: boolean;
   maintenance_message: string;
+  bank_name: string;
+  account_name: string;
+  account_number: string;
   updated_at: string;
 }
 
@@ -55,6 +67,7 @@ export function mapSiteSettingsRow(row: Partial<SiteSettingsRow> | null): SiteSe
 
   return {
     businessName: row.business_name ?? defaultSiteSettings.businessName,
+    phone: row.phone ?? defaultSiteSettings.phone,
     siteTitle: row.site_title ?? defaultSiteSettings.siteTitle,
     siteDescription: row.site_description ?? defaultSiteSettings.siteDescription,
     address: row.address ?? defaultSiteSettings.address,
@@ -67,6 +80,9 @@ export function mapSiteSettingsRow(row: Partial<SiteSettingsRow> | null): SiteSe
     minimumOrder: Number(row.minimum_order ?? defaultSiteSettings.minimumOrder),
     maintenanceMode: row.maintenance_mode ?? defaultSiteSettings.maintenanceMode,
     maintenanceMessage: row.maintenance_message ?? defaultSiteSettings.maintenanceMessage,
+    bankName: row.bank_name ?? defaultSiteSettings.bankName,
+    accountName: row.account_name ?? defaultSiteSettings.accountName,
+    accountNumber: row.account_number ?? defaultSiteSettings.accountNumber,
   };
 }
 
@@ -74,6 +90,7 @@ export function mapSiteSettingsToRow(settings: SiteSettings): Partial<SiteSettin
   return {
     id: 1,
     business_name: settings.businessName,
+    phone: settings.phone,
     site_title: settings.siteTitle,
     site_description: settings.siteDescription,
     address: settings.address,
@@ -86,5 +103,8 @@ export function mapSiteSettingsToRow(settings: SiteSettings): Partial<SiteSettin
     minimum_order: settings.minimumOrder,
     maintenance_mode: settings.maintenanceMode,
     maintenance_message: settings.maintenanceMessage,
+    bank_name: settings.bankName,
+    account_name: settings.accountName,
+    account_number: settings.accountNumber,
   };
 }

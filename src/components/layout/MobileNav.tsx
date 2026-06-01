@@ -2,13 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Utensils, ShoppingBag, MapPin, Mail } from 'lucide-react';
+import { Home, ShoppingBag, MapPin, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/cart-context';
 
 const mobileTabs = [
   { name: 'Home', href: '/', icon: Home },
-  { name: 'Menu', href: '/menu', icon: Utensils },
   { name: 'Track', href: '/track', icon: MapPin },
   { name: 'Contact', href: '/contact', icon: Mail },
 ];

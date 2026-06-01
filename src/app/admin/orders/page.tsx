@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye, Search, Loader2, ChevronLeft, ChevronRight, XCircle, CheckCircle } from 'lucide-react';
+import { Eye, Search, Loader2, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -202,33 +202,6 @@ export default function OrdersPage() {
     }
     if (updates.status) fetchStats();
     toast({ title: 'Success', description: 'Payment status updated.' });
-  };
-
-  const handleDeclineOrder = async (orderId: string) => {
-    const { error } = await supabase
-      .from('orders')
-      .update({ status: 'cancelled', payment_confirmed: false })
-      .eq('id', orderId);
-
-    if (error) {
-      toast({ title: 'Error', description: 'Failed to decline order.', variant: 'destructive' });
-      return;
-    }
-
-    setOrders(orders.map(o =>
-      o.id === orderId
-        ? { ...o, status: 'cancelled', payment_confirmed: false }
-        : o
-    ));
-    if (selectedOrder && selectedOrder.id === orderId) {
-      setSelectedOrder({
-        ...selectedOrder,
-        status: 'cancelled',
-        payment_confirmed: false,
-      });
-    }
-    fetchStats();
-    toast({ title: 'Success', description: 'Order declined.' });
   };
 
   return (
@@ -528,35 +501,20 @@ export default function OrdersPage() {
                   
                   {/* Payment Info */}
                   <div>
-                    <h3 className="font-semibold mb-3 text-sm text-slate-500">Payment Confirmed</h3>
-                    {!selectedOrder.payment_confirmed && selectedOrder.status === 'pending' ? (
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button 
-                          variant="default"
-                          onClick={() => handlePaymentConfirmToggle(selectedOrder.id, false)}
-                          className="w-full gap-1"
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                          Confirm
-                        </Button>
-                        <Button 
-                          variant="destructive"
-                          onClick={() => handleDeclineOrder(selectedOrder.id)}
-                          className="w-full gap-1"
-                        >
-                          <XCircle className="h-4 w-4" />
-                          Decline
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button 
-                        variant={selectedOrder.payment_confirmed ? 'default' : 'outline'}
-                        className={selectedOrder.payment_confirmed ? 'w-full' : 'w-full text-yellow-600'}
-                        onClick={() => handlePaymentConfirmToggle(selectedOrder.id, selectedOrder.payment_confirmed)}
-                      >
-                        {selectedOrder.payment_confirmed ? '✓ Confirmed' : 'Confirm Payment'}
-                      </Button>
-                    )}
+                    <h3 className="font-semibold mb-3 text-sm text-slate-500">Payment</h3>
+                    <Button
+                      variant={selectedOrder.payment_confirmed ? 'default' : 'outline'}
+                      className={selectedOrder.payment_confirmed ? 'w-full gap-1.5' : 'w-full gap-1.5 text-yellow-600 border-yellow-300'}
+                      onClick={() => handlePaymentConfirmToggle(selectedOrder.id, selectedOrder.payment_confirmed)}
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                      {selectedOrder.payment_confirmed ? 'Payment Confirmed' : 'Confirm Payment'}
+                    </Button>
+                    <p className="text-xs text-slate-400 mt-2">
+                      {selectedOrder.payment_confirmed
+                        ? 'Customer can track this order.'
+                        : 'Customer sees “payment not yet confirmed” until you confirm.'}
+                    </p>
                   </div>
                 </div>
 

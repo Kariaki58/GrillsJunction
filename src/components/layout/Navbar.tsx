@@ -10,7 +10,7 @@ import { useCart } from '@/context/cart-context';
 
 const navLinks = [
   { name: 'Home', href: '/' },
-  { name: 'Menu', href: '/menu' },
+  { name: 'Menu', href: '/#menu' },
   { name: 'Track Order', href: '/track' },
   { name: 'Contact', href: '/contact' },
 ];
@@ -51,7 +51,7 @@ export function Navbar() {
 
           <div className="flex items-center gap-4">
             <Button asChild variant="ghost" size="icon" className="rounded-full hover:bg-muted">
-              <Link href="/menu?focusSearch=true">
+              <Link href="/#menu">
                 <Search className="w-5 h-5" />
               </Link>
             </Button>
@@ -73,7 +73,7 @@ export function Navbar() {
               asChild
               className="rounded-full px-6 bg-primary hover:bg-primary/90 text-white font-bold"
             >
-              <Link href="/menu">ORDER NOW</Link>
+              <Link href="/#menu">ORDER NOW</Link>
             </Button>
           </div>
         </div>

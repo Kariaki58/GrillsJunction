@@ -19,14 +19,22 @@ import {
 } from '@/lib/orders';
 import { formatNaira } from '@/lib/format';
 import { downloadOrderReceipt } from '@/lib/receipt-pdf';
-import { getWhatsAppOrderUrl } from '@/lib/whatsapp';
+import { getWhatsAppOrderUrl, type BankDetails } from '@/lib/whatsapp';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
+import { defaultSiteSettings } from '@/lib/site-settings';
+
+const defaultBank: BankDetails = {
+  bank: defaultSiteSettings.bankName,
+  accountNumber: defaultSiteSettings.accountNumber,
+  accountName: defaultSiteSettings.accountName,
+};
 
 function ConfirmationContent() {
   const searchParams = useSearchParams();
   const trackingParam = searchParams.get('tracking');
   const [order, setOrder] = useState<Order | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const [bank, setBank] = useState<BankDetails>(defaultBank);
 
   useEffect(() => {
     const fromSession = getLastOrder();
@@ -39,23 +47,42 @@ function ConfirmationContent() {
     }
   }, [trackingParam]);
 
+  useEffect(() => {
+    const loadBank = async () => {
+      try {
+        const res = await fetch('/api/site-settings');
+        const data = await res.json();
+        if (data) {
+          setBank({
+            bank: data.bankName ?? defaultBank.bank,
+            accountNumber: data.accountNumber ?? defaultBank.accountNumber,
+            accountName: data.accountName ?? defaultBank.accountName,
+          });
+        }
+      } catch {
+        // keep defaults
+      }
+    };
+    loadBank();
+  }, []);
+
   if (!order) {
     return (
       <div className="pt-28 md:pt-32 pb-24 px-4 text-center">
         <p className="text-muted-foreground mb-6">Order not found.</p>
         <Button asChild className="rounded-full bg-primary">
-          <Link href="/menu">Back to menu</Link>
+          <Link href="/#menu">Back to menu</Link>
         </Button>
       </div>
     );
   }
 
-  const whatsappUrl = getWhatsAppOrderUrl(order);
+  const whatsappUrl = getWhatsAppOrderUrl(order, bank);
 
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      await downloadOrderReceipt(order);
+      await downloadOrderReceipt(order, bank);
     } finally {
       setDownloading(false);
     }
@@ -157,7 +184,7 @@ function ConfirmationContent() {
 
         <div className="mt-8 text-center">
           <Button asChild variant="link" className="text-muted-foreground">
-            <Link href="/menu">Continue shopping</Link>
+            <Link href="/#menu">Continue shopping</Link>
           </Button>
         </div>
       </div>

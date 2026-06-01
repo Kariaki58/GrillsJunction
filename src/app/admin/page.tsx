@@ -1,11 +1,53 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, ShoppingCart, UtensilsCrossed, DollarSign, Loader2 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  ShoppingCart,
+  UtensilsCrossed,
+  DollarSign,
+  Loader2,
+  Clock,
+  CheckCircle2,
+  Flame,
+  BarChart3,
+  Sun,
+} from 'lucide-react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
+  Area,
+  AreaChart,
+  ResponsiveContainer,
+} from 'recharts';
+import {
+  subDays,
+  startOfDay,
+  startOfWeek,
+  eachDayOfInterval,
+  eachWeekOfInterval,
+  isSameDay,
+  isSameWeek,
+  isToday,
+  format,
+  differenceInCalendarDays,
+} from 'date-fns';
 import { createClient } from '@/lib/supabase/client';
+import { formatNairaCompact, formatNairaShort, compactNumber, formatNumber } from '@/lib/format';
 
 // Interfaces for fetched data
 interface OrderItem {
@@ -23,30 +65,21 @@ interface Order {
   order_items: OrderItem[];
 }
 
-interface MenuItem {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-}
+// Time-range options that drive the analytics charts
+const RANGE_OPTIONS = [
+  { value: '7', label: 'Last 7 days', days: 7 },
+  { value: '30', label: 'Last 30 days', days: 30 },
+  { value: '90', label: 'Last 90 days', days: 90 },
+  { value: 'all', label: 'All time', days: null as number | null },
+];
 
-// Chart configurations
 const weeklyChartConfig = {
-  revenue: {
-    label: 'Revenue',
-    color: '#ea580c',
-  },
-  orders: {
-    label: 'Orders',
-    color: '#3b82f6',
-  },
+  revenue: { label: 'Revenue', color: '#ea580c' },
+  orders: { label: 'Orders', color: '#3b82f6' },
 };
 
 const topItemsConfig = {
-  revenue: {
-    label: 'Revenue (₦)',
-    color: '#10b981',
-  },
+  revenue: { label: 'Revenue (₦)', color: '#10b981' },
 };
 
 const PIE_COLORS = ['#ea580c', '#dc2626', '#f59e0b', '#6366f1', '#8b5cf6', '#10b981'];
@@ -55,31 +88,28 @@ export default function DashboardPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [menuItemsCount, setMenuItemsCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('weekly');
+  const [activeTab, setActiveTab] = useState('trend');
+  const [range, setRange] = useState('7');
+  const [isMobile, setIsMobile] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setIsLoading(true);
-      
-      // Fetch orders and their items
+
       const { data: ordersData } = await supabase
         .from('orders')
-        .select(`
-          *,
-          order_items (*)
-        `)
+        .select(`*, order_items (*)`)
         .order('created_at', { ascending: false });
-        
+
       if (ordersData) {
         setOrders(ordersData);
       }
 
-      // Fetch menu items count
       const { count } = await supabase
         .from('menu_items')
         .select('*', { count: 'exact', head: true });
-        
+
       setMenuItemsCount(count || 0);
       setIsLoading(false);
     };
@@ -87,74 +117,189 @@ export default function DashboardPage() {
     fetchDashboardData();
   }, []);
 
-  // Compute Statistics
-  const totalRevenue = orders.reduce((sum, order) => sum + (Number(order.total) || 0), 0);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  // ---- All-time business KPIs ----
+  const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
   const totalOrders = orders.length;
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+  const pendingOrders = orders.filter((o) => o.status === 'pending').length;
+  const deliveredOrders = orders.filter((o) => o.status === 'delivered').length;
 
-  // Compute Weekly Revenue Data (grouping by Day of Week)
-  // For a real app, this should probably filter by the last 7 days.
-  // Here we'll just map the existing orders into days of the week.
-  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const weeklyStats: Record<string, { revenue: number; orders: number }> = {};
-  
-  daysOfWeek.forEach(day => {
-    weeklyStats[day] = { revenue: 0, orders: 0 };
-  });
+  // Today's performance
+  const todayOrders = orders.filter((o) => isToday(new Date(o.created_at)));
+  const todayRevenue = todayOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
 
-  orders.forEach(order => {
-    const date = new Date(order.created_at);
-    const dayName = daysOfWeek[date.getDay()];
-    if (weeklyStats[dayName]) {
-      weeklyStats[dayName].revenue += Number(order.total) || 0;
-      weeklyStats[dayName].orders += 1;
+  // Revenue for each of the last 7 days (fixed window, independent of the range selector)
+  const last7Data = useMemo(() => {
+    const days = eachDayOfInterval({ start: startOfDay(subDays(new Date(), 6)), end: new Date() });
+    return days.map((d) => ({
+      label: format(d, 'EEE'),
+      revenue: orders
+        .filter((o) => isSameDay(new Date(o.created_at), d))
+        .reduce((s, o) => s + (Number(o.total) || 0), 0),
+    }));
+  }, [orders]);
+  const last7Total = last7Data.reduce((s, d) => s + d.revenue, 0);
+
+  // All-time best seller (by quantity)
+  const allItemStats: Record<string, number> = {};
+  orders.forEach((o) =>
+    o.order_items?.forEach((it) => {
+      allItemStats[it.name] = (allItemStats[it.name] || 0) + it.quantity;
+    })
+  );
+  const bestSeller =
+    Object.entries(allItemStats).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
+
+  // ---- Range-filtered analytics ----
+  const selectedRange = RANGE_OPTIONS.find((r) => r.value === range) ?? RANGE_OPTIONS[0];
+
+  const { filteredOrders, trendData, rangeRevenue } = useMemo(() => {
+    const now = new Date();
+    let rangeStart: Date;
+
+    if (selectedRange.days) {
+      rangeStart = startOfDay(subDays(now, selectedRange.days - 1));
+    } else if (orders.length > 0) {
+      const earliest = Math.min(...orders.map((o) => +new Date(o.created_at)));
+      rangeStart = startOfDay(new Date(earliest));
+    } else {
+      rangeStart = startOfDay(subDays(now, 6));
     }
-  });
 
-  const weeklyRevenueData = daysOfWeek.map(day => ({
-    day,
-    revenue: weeklyStats[day].revenue,
-    orders: weeklyStats[day].orders
-  }));
+    const filtered = orders.filter((o) => new Date(o.created_at) >= rangeStart);
+    const span = differenceInCalendarDays(now, rangeStart);
 
-  // Compute Top Items and Pie Data
-  const itemStats: Record<string, { quantity: number; revenue: number }> = {};
-  
-  orders.forEach(order => {
-    if (order.order_items) {
-      order.order_items.forEach(item => {
-        if (!itemStats[item.name]) {
-          itemStats[item.name] = { quantity: 0, revenue: 0 };
-        }
-        itemStats[item.name].quantity += item.quantity;
-        itemStats[item.name].revenue += item.price * item.quantity;
+    let series: { label: string; revenue: number; orders: number }[];
+
+    if (span <= 31) {
+      // Daily buckets
+      const days = eachDayOfInterval({ start: rangeStart, end: now });
+      series = days.map((d) => {
+        const bucket = filtered.filter((o) => isSameDay(new Date(o.created_at), d));
+        return {
+          label: format(d, 'MMM d'),
+          revenue: bucket.reduce((s, o) => s + (Number(o.total) || 0), 0),
+          orders: bucket.length,
+        };
+      });
+    } else {
+      // Weekly buckets for wider ranges
+      const weeks = eachWeekOfInterval({ start: rangeStart, end: now });
+      series = weeks.map((w) => {
+        const bucket = filtered.filter((o) =>
+          isSameWeek(new Date(o.created_at), w)
+        );
+        return {
+          label: format(startOfWeek(w), 'MMM d'),
+          revenue: bucket.reduce((s, o) => s + (Number(o.total) || 0), 0),
+          orders: bucket.length,
+        };
       });
     }
-  });
+
+    const revenue = filtered.reduce((s, o) => s + (Number(o.total) || 0), 0);
+    return { filteredOrders: filtered, trendData: series, rangeRevenue: revenue };
+  }, [orders, selectedRange]);
+
+  // Top items + distribution within the selected range
+  const itemStats: Record<string, { quantity: number; revenue: number }> = {};
+  filteredOrders.forEach((o) =>
+    o.order_items?.forEach((it) => {
+      if (!itemStats[it.name]) itemStats[it.name] = { quantity: 0, revenue: 0 };
+      itemStats[it.name].quantity += it.quantity;
+      itemStats[it.name].revenue += it.price * it.quantity;
+    })
+  );
 
   const sortedItems = Object.entries(itemStats)
-    .map(([name, stats]) => ({
-      name,
-      quantity: stats.quantity,
-      revenue: stats.revenue,
-      value: stats.quantity // For PieChart
-    }))
+    .map(([name, s]) => ({ name, quantity: s.quantity, revenue: s.revenue, value: s.quantity }))
     .sort((a, b) => b.revenue - a.revenue);
 
   const topItemsByRevenue = sortedItems.slice(0, 5);
   const pieData = sortedItems.slice(0, 5).map((item, index) => ({
     ...item,
-    color: PIE_COLORS[index % PIE_COLORS.length]
+    color: PIE_COLORS[index % PIE_COLORS.length],
   }));
 
-  // Dynamic pieChartConfig based on actual items
   const pieChartConfig = pieData.reduce((acc, item) => {
-    acc[item.name.toLowerCase().replace(/\s+/g, '')] = {
-      label: item.name,
-      color: item.color
-    };
+    acc[item.name.toLowerCase().replace(/\s+/g, '')] = { label: item.name, color: item.color };
     return acc;
   }, {} as Record<string, { label: string; color: string }>);
+
+  const kpis = [
+    {
+      title: "Today's Revenue",
+      value: formatNairaShort(todayRevenue),
+      full: formatNairaCompact(todayRevenue),
+      sub: `${todayOrders.length} order${todayOrders.length === 1 ? '' : 's'} today`,
+      icon: Sun,
+      tint: 'bg-orange-100 text-orange-600',
+    },
+    {
+      title: 'Total Revenue',
+      value: formatNairaShort(totalRevenue),
+      full: formatNairaCompact(totalRevenue),
+      sub: 'All time',
+      icon: DollarSign,
+      tint: 'bg-green-100 text-green-600',
+    },
+    {
+      title: 'Total Orders',
+      value: compactNumber(totalOrders),
+      full: formatNumber(totalOrders),
+      sub: 'All time',
+      icon: ShoppingCart,
+      tint: 'bg-blue-100 text-blue-600',
+    },
+    {
+      title: 'Avg Order Value',
+      value: formatNairaShort(avgOrderValue),
+      full: formatNairaCompact(Math.round(avgOrderValue)),
+      sub: 'Per order',
+      icon: BarChart3,
+      tint: 'bg-purple-100 text-purple-600',
+    },
+    {
+      title: 'Pending Orders',
+      value: compactNumber(pendingOrders),
+      full: formatNumber(pendingOrders),
+      sub: 'Awaiting action',
+      icon: Clock,
+      tint: 'bg-amber-100 text-amber-600',
+    },
+    {
+      title: 'Delivered',
+      value: compactNumber(deliveredOrders),
+      full: formatNumber(deliveredOrders),
+      sub: 'Completed orders',
+      icon: CheckCircle2,
+      tint: 'bg-emerald-100 text-emerald-600',
+    },
+    {
+      title: 'Menu Items',
+      value: compactNumber(menuItemsCount),
+      full: formatNumber(menuItemsCount),
+      sub: 'On the grill list',
+      icon: UtensilsCrossed,
+      tint: 'bg-slate-100 text-slate-600',
+    },
+    {
+      title: 'Best Seller',
+      value: bestSeller,
+      full: bestSeller,
+      sub: 'Most ordered item',
+      icon: Flame,
+      tint: 'bg-red-100 text-red-600',
+      small: true,
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -168,66 +313,103 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto">
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-none shadow-md">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Total Revenue</CardTitle>
-            <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-              <DollarSign className="h-4 w-4 text-orange-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-slate-900">₦{totalRevenue.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-md">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Total Orders</CardTitle>
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-              <ShoppingCart className="h-4 w-4 text-blue-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-slate-900">{totalOrders.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-md">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Menu Items</CardTitle>
-            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-              <UtensilsCrossed className="h-4 w-4 text-green-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-slate-900">{menuItemsCount}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-md">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Avg Order Value</CardTitle>
-            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-              <TrendingUp className="h-4 w-4 text-purple-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-slate-900">₦{avgOrderValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {kpis.map((kpi) => (
+          <Card key={kpi.title} className="border-none shadow-md overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-1.5 sm:pb-2 px-4 pt-4 sm:px-6 sm:pt-6">
+              <CardTitle className="text-xs sm:text-sm font-medium text-slate-600 truncate">
+                {kpi.title}
+              </CardTitle>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${kpi.tint}`}>
+                <kpi.icon className="h-4 w-4" />
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6 min-w-0">
+              <div
+                className={`font-bold tracking-tight text-slate-900 truncate tabular-nums ${
+                  kpi.small ? 'text-base sm:text-lg leading-tight' : 'text-2xl sm:text-3xl'
+                }`}
+                title={kpi.full}
+              >
+                {kpi.value}
+              </div>
+              <p className="text-[11px] sm:text-xs text-slate-400 mt-1 truncate">{kpi.sub}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Charts */}
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      {/* Revenue — Last 7 Days (bar chart) */}
+      <Card className="border-none shadow-lg bg-gradient-to-br from-slate-50 to-white">
+        <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Analytics</h2>
-            <p className="text-sm text-slate-500 mt-1">View your sales performance across different metrics</p>
+            <CardTitle className="text-lg text-slate-900">Revenue · Last 7 Days</CardTitle>
+            <CardDescription className="text-slate-600">Daily revenue this past week</CardDescription>
           </div>
-          <div className="flex flex-wrap gap-2 md:inline-flex md:overflow-hidden md:rounded-full md:border md:border-slate-300 md:bg-slate-100 md:p-1">
+          <div className="text-right">
+            <p className="text-xs text-slate-500">7-day total</p>
+            <p className="text-lg font-bold text-slate-900" title={formatNairaCompact(last7Total)}>{formatNairaShort(last7Total)}</p>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <ChartContainer config={weeklyChartConfig} className="w-full h-52 sm:h-60 md:h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={last7Data} margin={{ top: 10, right: 8, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis
+                  dataKey="label"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#64748b', fontSize: 11 }}
+                  dy={5}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#64748b', fontSize: 11 }}
+                  tickFormatter={(val) => (val >= 1000 ? `${val / 1000}k` : `${val}`)}
+                  width={38}
+                />
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent formatter={(value) => `₦${Number(value).toLocaleString()}`} />
+                  }
+                />
+                <Bar dataKey="revenue" fill="#ea580c" name="Revenue" radius={[6, 6, 0, 0]} maxBarSize={56} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
+      {/* Charts */}
+      <div className="space-y-4">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Analytics</h2>
+              <p className="text-sm text-slate-500 mt-1">
+                Showing data for {selectedRange.label.toLowerCase()} · {formatNairaCompact(rangeRevenue)}
+              </p>
+            </div>
+            {/* Sort / filter the graphics by time range */}
+            <Select value={range} onValueChange={setRange}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Select range" />
+              </SelectTrigger>
+              <SelectContent>
+                {RANGE_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-wrap gap-2 md:inline-flex md:overflow-hidden md:rounded-full md:border md:border-slate-300 md:bg-slate-100 md:p-1 md:self-start">
             {[
-              { id: 'weekly', label: 'Weekly' },
+              { id: 'trend', label: 'Revenue Trend' },
               { id: 'topitems', label: 'Top Items' },
               { id: 'distribution', label: 'Distribution' },
             ].map((tab) => (
@@ -235,7 +417,11 @@ export default function DashboardPage() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 md:flex-none rounded-lg md:rounded-full px-3 md:px-4 py-2 text-xs md:text-sm font-semibold transition duration-200 ${activeTab === tab.id ? 'bg-orange-500 text-white shadow-lg md:bg-white md:text-slate-900 md:shadow-sm' : 'bg-slate-200 text-slate-700 md:bg-transparent md:text-slate-600 hover:bg-slate-300 md:hover:bg-slate-200'}`}
+                className={`flex-1 md:flex-none rounded-lg md:rounded-full px-3 md:px-4 py-2 text-xs md:text-sm font-semibold transition duration-200 ${
+                  activeTab === tab.id
+                    ? 'bg-orange-500 text-white shadow-lg md:bg-white md:text-slate-900 md:shadow-sm'
+                    : 'bg-slate-200 text-slate-700 md:bg-transparent md:text-slate-600 hover:bg-slate-300 md:hover:bg-slate-200'
+                }`}
               >
                 {tab.label}
               </button>
@@ -243,31 +429,69 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {activeTab === 'weekly' && (
+        {activeTab === 'trend' && (
           <Card className="border-none shadow-lg bg-gradient-to-br from-slate-50 to-white">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-slate-900">Weekly Revenue</CardTitle>
-              <CardDescription className="text-slate-600">Revenue and order trends</CardDescription>
+              <CardTitle className="text-lg text-slate-900">Revenue Trend</CardTitle>
+              <CardDescription className="text-slate-600">
+                Revenue and orders over {selectedRange.label.toLowerCase()}
+              </CardDescription>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="overflow-x-auto -mx-6 md:mx-0 md:overflow-visible">
-                <div className="w-full min-w-max md:min-w-0 px-6 md:px-0">
-                  <ChartContainer config={weeklyChartConfig} className="w-full h-56 sm:h-64 md:h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={weeklyRevenueData} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                        <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={5} />
-                        <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} tickFormatter={(val) => `${val / 1000}k`} width={35} />
-                        <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} width={35} />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Legend wrapperStyle={{ paddingTop: '15px', fontSize: '12px' }} />
-                        <Bar yAxisId="left" dataKey="revenue" fill="#ea580c" name="Revenue" radius={[6, 6, 0, 0]} />
-                        <Bar yAxisId="right" dataKey="orders" fill="#3b82f6" name="Orders" radius={[6, 6, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
+              {filteredOrders.length > 0 ? (
+                <ChartContainer config={weeklyChartConfig} className="w-full h-56 sm:h-64 md:h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={trendData} margin={{ top: 10, right: 8, left: 0, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="revGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#ea580c" stopOpacity={0.4} />
+                          <stop offset="95%" stopColor="#ea580c" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis
+                        dataKey="label"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#64748b', fontSize: 11 }}
+                        interval="preserveStartEnd"
+                        minTickGap={20}
+                        dy={5}
+                      />
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#64748b', fontSize: 11 }}
+                        tickFormatter={(val) => (val >= 1000 ? `${val / 1000}k` : `${val}`)}
+                        width={38}
+                      />
+                      <ChartTooltip
+                        content={
+                          <ChartTooltipContent
+                            formatter={(value, name) =>
+                              name === 'revenue'
+                                ? `₦${Number(value).toLocaleString()}`
+                                : `${value} orders`
+                            }
+                          />
+                        }
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="revenue"
+                        stroke="#ea580c"
+                        strokeWidth={2.5}
+                        fill="url(#revGradient)"
+                        name="revenue"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              ) : (
+                <div className="flex items-center justify-center py-12 text-slate-400">
+                  <p className="font-medium">No sales in this period</p>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -276,32 +500,47 @@ export default function DashboardPage() {
           <Card className="border-none shadow-lg bg-gradient-to-br from-slate-50 to-white">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg text-slate-900">Top Selling Items</CardTitle>
-              <CardDescription className="text-slate-600">Best performing menu items by revenue</CardDescription>
+              <CardDescription className="text-slate-600">
+                Best performing menu items by revenue
+              </CardDescription>
             </CardHeader>
             <CardContent className="pt-0">
               {topItemsByRevenue.length > 0 ? (
-                <div className="overflow-x-auto -mx-6 md:mx-0 md:overflow-visible">
-                  <div className="w-full min-w-max md:min-w-0 px-6 md:px-0">
-                    <ChartContainer config={topItemsConfig} className="w-full h-56 sm:h-64 md:h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={topItemsByRevenue}
-                          layout="vertical"
-                          margin={{ top: 5, right: 30, left: 60, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
-                          <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} tickFormatter={(val) => `${val / 1000}k`} />
-                          <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#475569', fontSize: 11 }} width={70} />
-                          <ChartTooltip content={<ChartTooltipContent formatter={(value) => `₦${Number(value).toLocaleString()}`} />} />
-                          <Bar dataKey="revenue" fill="#10b981" name="Revenue" radius={[0, 6, 6, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </div>
-                </div>
+                <ChartContainer config={topItemsConfig} className="w-full h-56 sm:h-64 md:h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={topItemsByRevenue}
+                      layout="vertical"
+                      margin={{ top: 5, right: 16, left: 8, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                      <XAxis
+                        type="number"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#64748b', fontSize: 11 }}
+                        tickFormatter={(val) => (val >= 1000 ? `${val / 1000}k` : `${val}`)}
+                      />
+                      <YAxis
+                        dataKey="name"
+                        type="category"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#475569', fontSize: 11 }}
+                        width={isMobile ? 80 : 110}
+                      />
+                      <ChartTooltip
+                        content={
+                          <ChartTooltipContent formatter={(value) => `₦${Number(value).toLocaleString()}`} />
+                        }
+                      />
+                      <Bar dataKey="revenue" fill="#10b981" name="Revenue" radius={[0, 6, 6, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
               ) : (
                 <div className="flex items-center justify-center py-12 text-slate-400">
-                  <p className="font-medium">No sales data available yet</p>
+                  <p className="font-medium">No sales in this period</p>
                 </div>
               )}
             </CardContent>
@@ -316,8 +555,11 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="pt-0">
               {pieData.length > 0 ? (
-                <div className="flex justify-center">
-                  <ChartContainer config={pieChartConfig} className="w-full h-56 sm:h-64 md:h-80 flex justify-center">
+                <>
+                  <ChartContainer
+                    config={pieChartConfig}
+                    className="w-full h-56 sm:h-64 md:h-80 flex justify-center"
+                  >
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -325,10 +567,9 @@ export default function DashboardPage() {
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
-                          outerRadius={window.innerWidth < 768 ? 70 : 100}
-                          innerRadius={window.innerWidth < 768 ? 35 : 50}
-                          fill="#8884d8"
+                          label={({ percent }) => `${((percent ?? 0) * 100).toFixed(0)}%`}
+                          outerRadius={isMobile ? 70 : 100}
+                          innerRadius={isMobile ? 35 : 50}
                           dataKey="value"
                           paddingAngle={2}
                         >
@@ -340,20 +581,18 @@ export default function DashboardPage() {
                       </PieChart>
                     </ResponsiveContainer>
                   </ChartContainer>
-                </div>
+                  <div className="mt-4 grid grid-cols-2 gap-2 md:flex md:flex-wrap md:justify-center md:gap-3">
+                    {pieData.map((item) => (
+                      <div key={item.name} className="flex items-center gap-2 text-xs">
+                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                        <span className="text-slate-700 font-medium truncate">{item.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
               ) : (
                 <div className="flex items-center justify-center py-12 text-slate-400">
-                  <p className="font-medium">No sales data available yet</p>
-                </div>
-              )}
-              {pieData.length > 0 && (
-                <div className="mt-4 grid grid-cols-2 gap-2 md:flex md:flex-wrap md:justify-center md:gap-3">
-                  {pieData.map((item) => (
-                    <div key={item.name} className="flex items-center gap-2 text-xs">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                      <span className="text-slate-700 font-medium truncate">{item.name}</span>
-                    </div>
-                  ))}
+                  <p className="font-medium">No sales in this period</p>
                 </div>
               )}
             </CardContent>
@@ -370,26 +609,36 @@ export default function DashboardPage() {
         <CardContent>
           <div className="space-y-3">
             {orders.slice(0, 5).map((order) => (
-              <div key={order.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:shadow-sm transition-shadow">
-                <div>
-                  <p className="font-bold text-slate-900 tracking-tight">{order.tracking_id}</p>
-                  <p className="text-sm text-slate-500 mt-0.5">{new Date(order.created_at).toLocaleString()}</p>
+              <div
+                key={order.id}
+                className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:shadow-sm transition-shadow"
+              >
+                <div className="min-w-0">
+                  <p className="font-bold text-slate-900 tracking-tight truncate">{order.tracking_id}</p>
+                  <p className="text-sm text-slate-500 mt-0.5">
+                    {new Date(order.created_at).toLocaleString()}
+                  </p>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-slate-900 text-lg">₦{Number(order.total).toLocaleString()}</p>
-                  <span className={`inline-flex px-2.5 py-0.5 mt-1 text-xs font-semibold rounded-full capitalize
-                    ${order.status === 'delivered' ? 'bg-green-100 text-green-800' : 
-                      order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                      'bg-blue-100 text-blue-800'}`}>
+                <div className="text-right shrink-0 ml-3">
+                  <p className="font-bold text-slate-900 text-base sm:text-lg">
+                    ₦{Number(order.total).toLocaleString()}
+                  </p>
+                  <span
+                    className={`inline-flex px-2.5 py-0.5 mt-1 text-xs font-semibold rounded-full capitalize ${
+                      order.status === 'delivered'
+                        ? 'bg-green-100 text-green-800'
+                        : order.status === 'pending'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}
+                  >
                     {order.status}
                   </span>
                 </div>
               </div>
             ))}
             {orders.length === 0 && (
-              <div className="text-center py-6 text-slate-500">
-                No recent orders found.
-              </div>
+              <div className="text-center py-6 text-slate-500">No recent orders found.</div>
             )}
           </div>
         </CardContent>

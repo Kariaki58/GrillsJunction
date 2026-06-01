@@ -1,5 +1,86 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Resend } from 'resend';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { mapSiteSettingsRow } from '@/lib/site-settings';
+import {
+  buildAdminOrderEmail,
+  buildCustomerOrderEmail,
+  type OrderEmailData,
+} from '@/lib/order-emails';
+
+const FROM_EMAIL = 'GrillsJunction <admin@grillsjunction.com.ng>';
+
+function adminRecipient(): string {
+  if (process.env.CONTACT_EMAIL) return process.env.CONTACT_EMAIL;
+  const first = (process.env.ADMIN_EMAILS || '')
+    .split(',')
+    .map((e) => e.trim())
+    .filter(Boolean)[0];
+  return first || 'admin@grillsjunction.com.ng';
+}
+
+// Sends the admin + customer order emails. Failures are logged but never block the order.
+async function sendOrderEmails(data: OrderEmailData, customerEmail: string) {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[API /api/orders] RESEND_API_KEY not set — skipping order emails');
+    return;
+  }
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const admin = buildAdminOrderEmail(data);
+  const customer = buildCustomerOrderEmail(data);
+
+  const results = await Promise.allSettled([
+    resend.emails.send({
+      from: FROM_EMAIL,
+      to: [adminRecipient()],
+      replyTo: customerEmail,
+      subject: admin.subject,
+      html: admin.html,
+    }),
+    resend.emails.send({
+      from: FROM_EMAIL,
+      to: [customerEmail],
+      subject: customer.subject,
+      html: customer.html,
+    }),
+  ]);
+
+  results.forEach((r, i) => {
+    const who = i === 0 ? 'admin' : 'customer';
+    if (r.status === 'rejected') {
+      console.error(`[API /api/orders] ${who} email failed:`, r.reason);
+    } else if (r.value.error) {
+      console.error(`[API /api/orders] ${who} email error:`, r.value.error);
+    }
+  });
+}
+
+// Public lookup of a single order by its tracking ID (for the customer Track page).
+// Uses the admin client to bypass RLS, but only ever returns the one matching order.
+export async function GET(request: NextRequest) {
+  const trackingId = request.nextUrl.searchParams.get('tracking_id');
+
+  if (!trackingId) {
+    return NextResponse.json({ error: 'tracking_id is required' }, { status: 400 });
+  }
+
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*, order_items (*)')
+    .eq('tracking_id', trackingId.trim().toUpperCase())
+    .maybeSingle();
+
+  if (error) {
+    return NextResponse.json({ error: 'Failed to fetch order' }, { status: 500 });
+  }
+
+  if (!data) {
+    return NextResponse.json({ order: null }, { status: 404 });
+  }
+
+  return NextResponse.json({ order: data });
+}
 
 export async function POST(request: NextRequest) {
 
@@ -105,6 +186,45 @@ export async function POST(request: NextRequest) {
         { status: 201 }
       );
     }
+    // --- Send notification emails (admin + customer). Non-blocking failures. ---
+    try {
+      const { data: settingsRow } = await supabase
+        .from('site_settings')
+        .select('*')
+        .maybeSingle();
+      const settings = mapSiteSettingsRow(settingsRow);
+
+      const emailData: OrderEmailData = {
+        trackingId: tracking_id,
+        customerName: customer_name,
+        customerPhone: customer_phone,
+        customerEmail: customer_email,
+        fulfillmentType: fulfillment_type,
+        fulfillmentAddress: fulfillment_address,
+        fulfillmentArea: fulfillment_area,
+        fulfillmentNotes: fulfillment_notes,
+        items: (items as { name: string; price: number; qty: number }[]).map((it) => ({
+          name: it.name,
+          price: Number(it.price),
+          qty: Number(it.qty),
+        })),
+        subtotal: Number(subtotal),
+        deliveryFee: Number(delivery_fee),
+        total: Number(total),
+        businessName: settings.businessName || 'GrillsJunction',
+        bank: {
+          bank: settings.bankName,
+          accountNumber: settings.accountNumber,
+          accountName: settings.accountName,
+        },
+        trackUrl: `${request.nextUrl.origin}/track?id=${encodeURIComponent(tracking_id)}`,
+      };
+
+      await sendOrderEmails(emailData, customer_email);
+    } catch (emailErr) {
+      console.error('[API /api/orders] Failed sending order emails:', emailErr);
+    }
+
     return NextResponse.json(
       { success: true, orderId, trackingId: tracking_id },
       { status: 201 }
