@@ -6,20 +6,18 @@ import { motion } from 'framer-motion';
 import { Trash2, Plus, Minus, ArrowRight, ShieldCheck, Truck, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/cart-context';
-import { DELIVERY_FEE } from '@/lib/menu';
 import { formatNaira } from '@/lib/format';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function CartPage() {
   const { items, subtotal, updateQty, removeItem } = useCart();
-  const deliveryFee = items.length > 0 ? DELIVERY_FEE : 0;
   const getImageSrc = (image: string | null | undefined) => {
     if (!image) return PlaceHolderImages[0]?.imageUrl || '/placeholder.png';
     if (image.startsWith('http')) return image;
     const placeholder = PlaceHolderImages.find((i) => i.id === image);
-    return placeholder?.imageUrl || image; 
+    return placeholder?.imageUrl || image;
   };
-  const total = subtotal + deliveryFee;
+  const total = subtotal;
 
   return (
     <div className="pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-16 sm:pb-20 md:pb-24 px-3 sm:px-4 min-h-screen">
@@ -144,16 +142,9 @@ export default function CartPage() {
                     <span>Subtotal</span>
                     <span className="font-bold">{formatNaira(subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-muted-foreground text-xs sm:text-sm md:text-base">
-                    <span>Delivery Fee (est.)</span>
-                    <span className="font-bold">{formatNaira(deliveryFee)}</span>
-                  </div>
-                  <p className="text-[10px] sm:text-[11px] md:text-xs text-muted-foreground">
-                    Pickup is free — selected at checkout
-                  </p>
                   <div className="h-px bg-muted my-2 sm:my-3 md:my-4" />
                   <div className="flex justify-between items-center text-base sm:text-lg md:text-xl font-bold">
-                    <span>Estimated total</span>
+                    <span>Total</span>
                     <span className="text-primary font-headline text-lg sm:text-xl md:text-2xl">
                       {formatNaira(total)}
                     </span>

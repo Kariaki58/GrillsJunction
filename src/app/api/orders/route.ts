@@ -211,7 +211,6 @@ export async function POST(request: NextRequest) {
           qty: Number(it.qty),
         })),
         subtotal: Number(subtotal),
-        deliveryFee: Number(delivery_fee),
         total: Number(total),
         businessName: settings.businessName || 'GrillsJunction',
         bank: {

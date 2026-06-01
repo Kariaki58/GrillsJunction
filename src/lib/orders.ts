@@ -22,7 +22,6 @@ export interface Order {
   fulfillment: OrderFulfillment;
   items: CartItem[];
   subtotal: number;
-  deliveryFee: number;
   total: number;
   paymentConfirmed: boolean;
 }

@@ -9,7 +9,6 @@ export interface SiteSettings {
   zipCode: string;
   openingTime: string;
   closingTime: string;
-  deliveryFee: number;
   minimumOrder: number;
   maintenanceMode: boolean;
   maintenanceMessage: string;
@@ -29,7 +28,6 @@ export const defaultSiteSettings: SiteSettings = {
   zipCode: '100276',
   openingTime: '10:00',
   closingTime: '23:59',
-  deliveryFee: 2000,
   minimumOrder: 10000,
   maintenanceMode: false,
   maintenanceMessage: 'We are currently under maintenance. Please try again later.',
@@ -76,7 +74,6 @@ export function mapSiteSettingsRow(row: Partial<SiteSettingsRow> | null): SiteSe
     zipCode: row.zip_code ?? defaultSiteSettings.zipCode,
     openingTime: row.opening_time ?? defaultSiteSettings.openingTime,
     closingTime: row.closing_time ?? defaultSiteSettings.closingTime,
-    deliveryFee: Number(row.delivery_fee ?? defaultSiteSettings.deliveryFee),
     minimumOrder: Number(row.minimum_order ?? defaultSiteSettings.minimumOrder),
     maintenanceMode: row.maintenance_mode ?? defaultSiteSettings.maintenanceMode,
     maintenanceMessage: row.maintenance_message ?? defaultSiteSettings.maintenanceMessage,
@@ -99,7 +96,6 @@ export function mapSiteSettingsToRow(settings: SiteSettings): Partial<SiteSettin
     zip_code: settings.zipCode,
     opening_time: settings.openingTime,
     closing_time: settings.closingTime,
-    delivery_fee: settings.deliveryFee,
     minimum_order: settings.minimumOrder,
     maintenance_mode: settings.maintenanceMode,
     maintenance_message: settings.maintenanceMessage,

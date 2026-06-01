@@ -97,7 +97,6 @@ function mapServerOrder(row: ServerOrder): Order {
       image: it.image ?? '',
     })),
     subtotal: Number(row.subtotal),
-    deliveryFee: Number(row.delivery_fee),
     total: Number(row.total),
     paymentConfirmed: row.payment_confirmed,
   };

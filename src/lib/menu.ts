@@ -36,5 +36,3 @@ export function getCategoryItemCount(category: string): number {
 export function isMenuCategory(value: string | null): value is MenuCategory {
   return menuCategories.includes(value as MenuCategory);
 }
-
-export const DELIVERY_FEE = 1500;

@@ -13,7 +13,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { PaymentDetails } from '@/components/checkout/payment-details';
 import { useCart } from '@/context/cart-context';
-import { DELIVERY_FEE } from '@/lib/menu';
 import { formatNaira } from '@/lib/format';
 import { generateTrackingId, saveOrder, type FulfillmentType } from '@/lib/orders';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -35,9 +34,8 @@ export default function CheckoutPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const deliveryFee = fulfillmentType === 'delivery' ? DELIVERY_FEE : 0;
-  const total = subtotal + deliveryFee;
-  
+  const total = subtotal;
+
   const getImageSrc = (image: string | null | undefined) => {
     if (!image) return PlaceHolderImages[0]?.imageUrl || '/placeholder.png';
     if (image.startsWith('http')) return image;
@@ -78,7 +76,7 @@ export default function CheckoutPage() {
       fulfillment_area: area.trim() || null,
       fulfillment_notes: notes.trim() || null,
       subtotal,
-      delivery_fee: deliveryFee,
+      delivery_fee: 0,
       total,
       payment_confirmed: false,
       status: 'pending',
@@ -126,7 +124,6 @@ export default function CheckoutPage() {
       },
       items: [...items],
       subtotal,
-      deliveryFee,
       total,
       paymentConfirmed: false,
     };
@@ -241,7 +238,7 @@ export default function CheckoutPage() {
                   <div>
                     <p className="font-bold text-sm sm:text-base">Delivery</p>
                     <p className="text-[10px] sm:text-xs text-muted-foreground">
-                      {formatNaira(DELIVERY_FEE)} fee · 35–45 mins
+                      35–45 mins
                     </p>
                   </div>
                 </label>
@@ -364,12 +361,6 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-muted-foreground">
                   <span>Subtotal</span>
                   <span className="font-bold">{formatNaira(subtotal)}</span>
-                </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Delivery</span>
-                  <span className="font-bold">
-                    {deliveryFee === 0 ? 'Free' : formatNaira(deliveryFee)}
-                  </span>
                 </div>
                 <div className="flex justify-between text-base sm:text-lg font-bold pt-1 sm:pt-2">
                   <span>Total</span>

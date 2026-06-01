@@ -210,8 +210,6 @@ export async function downloadOrderReceipt(
   };
 
   totalRow('Subtotal', money(order.subtotal), false, DARK, 10);
-  y += 6.5;
-  totalRow('Delivery fee', money(order.deliveryFee), false, DARK, 10);
   y += 5;
   doc.setDrawColor(LINE[0], LINE[1], LINE[2]);
   doc.line(totalsLabelX, y, amountRight, y);

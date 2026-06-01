@@ -18,7 +18,6 @@ export interface OrderEmailData {
   fulfillmentNotes?: string | null;
   items: OrderEmailItem[];
   subtotal: number;
-  deliveryFee: number;
   total: number;
   businessName: string;
   bank: { bank: string; accountNumber: string; accountName: string };
@@ -59,10 +58,6 @@ function totalsBlock(data: OrderEmailData): string {
       <tr>
         <td style="padding:4px 0;color:${MUTED};font-size:14px;">Subtotal</td>
         <td style="padding:4px 0;color:${DARK};font-size:14px;text-align:right;">${ngn(data.subtotal)}</td>
-      </tr>
-      <tr>
-        <td style="padding:4px 0;color:${MUTED};font-size:14px;">Delivery fee</td>
-        <td style="padding:4px 0;color:${DARK};font-size:14px;text-align:right;">${ngn(data.deliveryFee)}</td>
       </tr>
       <tr>
         <td style="padding:10px 0 0;color:${DARK};font-size:16px;font-weight:700;border-top:2px solid ${BORDER};">Total</td>

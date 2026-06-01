@@ -39,7 +39,6 @@ export function buildOrderWhatsAppMessage(
   lines.push(
     '',
     `Subtotal: ${formatNaira(order.subtotal)}`,
-    `Delivery: ${formatNaira(order.deliveryFee)}`,
     `Total: ${formatNaira(order.total)}`,
     '',
     `I have made payment via ${bank.bank} to ${bank.accountNumber} (${bank.accountName}).`,

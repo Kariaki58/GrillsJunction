@@ -366,8 +366,8 @@ export default function SettingsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Operating Hours & Delivery</CardTitle>
-              <CardDescription>Set your business hours and delivery settings</CardDescription>
+              <CardTitle>Operating Hours & Orders</CardTitle>
+              <CardDescription>Set your business hours and minimum order</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -390,27 +390,15 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <Label htmlFor="deliveryFee">Delivery Fee (₦)</Label>
-                  <Input
-                    id="deliveryFee"
-                    type="number"
-                    value={siteSettings.deliveryFee}
-                    onChange={(e) => handleSiteChange('deliveryFee', Number(e.target.value))}
-                    placeholder="2000"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="minimumOrder">Minimum Order (₦)</Label>
-                  <Input
-                    id="minimumOrder"
-                    type="number"
-                    value={siteSettings.minimumOrder}
-                    onChange={(e) => handleSiteChange('minimumOrder', Number(e.target.value))}
-                    placeholder="10000"
-                  />
-                </div>
+              <div>
+                <Label htmlFor="minimumOrder">Minimum Order (₦)</Label>
+                <Input
+                  id="minimumOrder"
+                  type="number"
+                  value={siteSettings.minimumOrder}
+                  onChange={(e) => handleSiteChange('minimumOrder', Number(e.target.value))}
+                  placeholder="10000"
+                />
               </div>
             </CardContent>
           </Card>
