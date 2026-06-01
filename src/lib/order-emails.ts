@@ -176,7 +176,7 @@ export function buildCustomerOrderEmail(data: OrderEmailData): { subject: string
       </div>
     </td></tr>
     <tr><td style="padding:0 28px 26px;text-align:center;">
-      <p style="margin:0;color:${MUTED};font-size:12px;">${esc(data.businessName)} • Alimosho, Lagos</p>
+      <p style="margin:0;color:${MUTED};font-size:12px;">${esc(data.businessName)} • 31 Santos Ave, Abule Egba, Lagos</p>
     </td></tr>
   `);
   return { subject, html };

@@ -45,13 +45,13 @@ export function Footer() {
             <h4 className="text-white font-bold text-lg font-heading tracking-wide uppercase">Connect</h4>
             <ul className="space-y-4 text-sm font-medium">
               <li>
-                <a href="mailto:admin@grillsjunction.com.ng" className="flex items-center gap-3 hover:text-primary transition-colors">
+                <a href="mailto:grillsjunction@gmail.com" className="flex items-center gap-3 hover:text-primary transition-colors">
                   <Mail className="w-5 h-5 text-primary" />
-                  admin@grillsjunction.com.ng
+                  grillsjunction@gmail.com
                 </a>
               </li>
               <li>
-                <a href="https://maps.app.goo.gl/h59fc4rasj68KjYu5" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-primary transition-colors">
+                <a href="https://maps.app.goo.gl/Jfth8rR6yJXePGdR6" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-primary transition-colors">
                   <MapPin className="w-5 h-5 text-primary" />
                   Find us on Google Maps
                 </a>

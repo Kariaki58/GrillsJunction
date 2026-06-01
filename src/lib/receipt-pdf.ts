@@ -88,7 +88,7 @@ export async function downloadOrderReceipt(
   text('bold', 19, DARK);
   doc.text('grillsJunction', brandX, 22);
   text('normal', 8.5, MUTED);
-  doc.text('Premium BBQ  •  Alimosho, Lagos', brandX, 27.5);
+  doc.text('Premium BBQ  •  Abule Egba, Lagos', brandX, 27.5);
 
   text('bold', 15, ORANGE);
   doc.text('RECEIPT', right, 18, { align: 'right' });

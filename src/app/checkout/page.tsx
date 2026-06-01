@@ -281,7 +281,7 @@ export default function CheckoutPage() {
                       id="area"
                       value={area}
                       onChange={(e) => setArea(e.target.value)}
-                      placeholder="e.g. Meiran, Alimosho"
+                      placeholder="e.g. Abule Egba, Meiran"
                       className="h-10 sm:h-12 rounded-lg sm:rounded-xl bg-background border-input text-sm sm:text-base"
                     />
                     {errors.area && (

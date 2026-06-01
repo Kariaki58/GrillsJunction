@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Flame, Truck, ShieldCheck, ArrowRight, Star, Plus, Search, Loader2, ShoppingCart, ChevronLeft, ChevronRight, Utensils } from 'lucide-react'
+import { Flame, Truck, ShieldCheck, ArrowRight, Star, Plus, Search, Loader2, ShoppingCart, ChevronLeft, ChevronRight, Utensils, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PlaceHolderImages } from '@/lib/placeholder-images'
@@ -148,7 +148,7 @@ export default function Home() {
         </div>
 
         <p className="text-[10px] sm:text-xs md:text-sm tracking-[0.25em] sm:tracking-[0.3em] font-medium text-white/60 uppercase">
-          Order Today <span className="mx-1.5 sm:mx-3 text-primary/80">•</span> Dine In <span className="mx-1.5 sm:mx-3 text-primary/80">•</span> Takeaway <span className="mx-1.5 sm:mx-3 text-primary/80">•</span> Delivery
+          Order Today <span className="mx-1.5 sm:mx-3 text-primary/80">•</span> Takeaway <span className="mx-1.5 sm:mx-3 text-primary/80">•</span> Delivery
         </p>
       </motion.div>
     </div>
@@ -161,8 +161,28 @@ export default function Home() {
         <p className="text-primary font-bold text-xs md:text-sm tracking-widest uppercase mb-2">Our Specialties</p>
         <h2 className="text-3xl md:text-5xl font-headline font-bold">The Grill List</h2>
         <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto mt-3">
-          Explore our premium selection of fire-grilled delicacies, prepared fresh in Alimosho, Lagos.
+          Explore our premium selection of fire-grilled delicacies, prepared fresh in Abule Egba, Lagos.
         </p>
+      </div>
+
+      {/* Friendly note about hours & prep times */}
+      <div className="max-w-3xl mx-auto mb-8 md:mb-10">
+        <div className="rounded-2xl md:rounded-3xl border border-primary/20 bg-primary/5 p-4 md:p-6 flex gap-3 md:gap-4 text-left">
+          <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Clock className="w-5 h-5 text-primary" />
+          </div>
+          <div className="text-sm md:text-[0.95rem] leading-relaxed text-foreground/80">
+            <p className="font-bold text-foreground mb-1">A note from us 😊</p>
+            <p>
+              We are not a fast food restaurant dear sponsor/queen 😊 we open for{' '}
+              <span className="font-semibold text-foreground">12pm</span> and delivery or pickup start by{' '}
+              <span className="font-semibold text-foreground">2pm</span>. All orders after 3pm takes{' '}
+              <span className="font-semibold text-foreground">30–40 minutes</span> to be ready. Our meals/sides
+              are freshly prepared as you order.
+            </p>
+            <p className="mt-1.5">Thank you for always buying from us ☺️✨</p>
+          </div>
+        </div>
       </div>
 
       {/* Search */}
@@ -211,7 +231,7 @@ export default function Home() {
                     transition={{ delay: Math.min(idx, 8) * 0.05 }}
                   >
                     <div className="glass-card rounded-2xl md:rounded-[2rem] overflow-hidden flex flex-col h-full shadow-md hover:shadow-xl border border-border hover:border-primary/30 transition-all duration-500 active:scale-[0.98] bg-white dark:bg-slate-900">
-                      <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-slate-800">
+                      <div className="relative aspect-[4/5] overflow-hidden bg-slate-100 dark:bg-slate-800">
                         <Image
                           src={imageSrc}
                           alt={item.name}
@@ -219,7 +239,6 @@ export default function Home() {
                           sizes="(max-width: 1024px) 50vw, 25vw"
                           className="object-cover hover:scale-105 transition-transform duration-700"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
                         {item.badge && (
                           <div className="absolute top-2.5 left-2.5 md:top-4 md:left-4">
                             <Badge className="bg-primary text-white border-none px-2.5 py-0.5 text-[10px] md:text-xs font-bold shadow-md">
@@ -236,20 +255,25 @@ export default function Home() {
                       </div>
                       <div className="p-3.5 md:p-6 flex-1 flex flex-col">
                         <h3 className="text-base md:text-xl font-bold mb-1.5 leading-tight line-clamp-1">{item.name}</h3>
-                        <p className="text-xs md:text-sm text-muted-foreground mb-4 md:mb-6 leading-relaxed">
+                        <p
+                          className={`text-xs md:text-sm text-muted-foreground ${
+                            isExpanded ? '' : 'line-clamp-1'
+                          }`}
+                        >
                           {displayDesc}
-                          {shouldTruncate && (
-                            <button
-                              onClick={() => setExpandedDescId(isExpanded ? null : item.id)}
-                              className="text-primary font-bold ml-1 hover:underline inline-block"
-                            >
-                              {isExpanded ? 'See less' : 'See more'}
-                            </button>
-                          )}
                         </p>
+
+                        {shouldTruncate && (
+                          <button
+                            onClick={() => setExpandedDescId(isExpanded ? null : item.id)}
+                            className="block mb-1 mt-0 text-primary font-semibold text-xs hover:underline text-left"
+                          >
+                            {isExpanded ? 'See less' : 'See more'}
+                          </button>
+                        )}
                         <div className="mt-auto flex items-center justify-between gap-2">
                           <div className="min-w-0">
-                            <span className="text-[10px] md:text-xs text-muted-foreground block font-bold uppercase tracking-wide">Price</span>
+                            {/* <span className="text-[10px] md:text-xs text-muted-foreground block font-bold uppercase tracking-wide">Price</span> */}
                             <span className="text-base md:text-xl font-bold">{formatNaira(item.price)}</span>
                           </div>
                           <Button
@@ -342,7 +366,7 @@ export default function Home() {
           {[
             { icon: ShieldCheck, title: "Premium Quality Meat", desc: "We source only the finest cuts, hand-picked daily for maximum tenderness." },
             { icon: Flame, title: "The Signature Junction Rub", desc: "Our secret spice blend inspired by traditional Yoruba hearth cooking." },
-            { icon: Truck, title: "Lagos Lightning Delivery", desc: "From our grill to your door in Alimosho and beyond in record time." }
+            { icon: Truck, title: "Lagos Lightning Delivery", desc: "From our grill to your door in Abule Egba and beyond in record time." }
           ].map((item, i) => (
             <div key={i} className="flex gap-6">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
@@ -381,7 +405,7 @@ export default function Home() {
       <div className="overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
         <div className="flex flex-nowrap gap-6 md:animate-marquee md:overflow-visible snap-x snap-mandatory scroll-smooth p-4">
          {[
-           { name: "Tunde Ednut", role: "Lagos Foodie", comment: "The Asun is legendary. Best I've had in Alimosho area, hands down!" },
+           { name: "Tunde Ednut", role: "Lagos Foodie", comment: "The Asun is legendary. Best I've had in the Abule Egba area, hands down!" },
            { name: "Seyi Shay", role: "Artist", comment: "grillsJunction is the perfect late-night vibe. Their Catfish is 10/10." },
            { name: "Davido", role: "Customer", comment: "E choke! Best BBQ in the city. No cap." },
            { name: "Chioma", role: "Chef", comment: "The spice level is perfect. Truly premium quality." }

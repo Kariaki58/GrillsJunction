@@ -116,13 +116,13 @@ export default function ContactPage() {
               <h2 className="text-2xl font-bold font-heading mb-6 text-stone-900 dark:text-white">Contact Information</h2>
               
               <div className="space-y-6">
-                <a href="mailto:admin@grillsjunction.com.ng" className="flex items-start gap-4 p-4 rounded-2xl hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors group">
+                <a href="mailto:grillsjunction@gmail.com" className="flex items-start gap-4 p-4 rounded-2xl hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors group">
                   <div className="bg-primary/10 p-3 rounded-xl group-hover:bg-primary group-hover:text-white transition-colors">
                     <Mail className="w-6 h-6 text-primary group-hover:text-white" />
                   </div>
                   <div>
                     <h3 className="font-bold text-stone-900 dark:text-white mb-1">Email Us</h3>
-                    <p className="text-stone-600 dark:text-stone-400 text-sm">admin@grillsjunction.com.ng</p>
+                    <p className="text-stone-600 dark:text-stone-400 text-sm">grillsjunction@gmail.com</p>
                   </div>
                 </a>
 
@@ -132,9 +132,9 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-bold text-stone-900 dark:text-white mb-1">Our Location</h3>
-                    <p className="text-stone-600 dark:text-stone-400 text-sm mb-3">Lagos, Nigeria</p>
+                    <p className="text-stone-600 dark:text-stone-400 text-sm mb-3">31 Santos Ave, Abule Egba, Lagos Mainland 100276, Lagos</p>
                     <a 
-                      href="https://maps.app.goo.gl/h59fc4rasj68KjYu5" 
+                      href="https://maps.app.goo.gl/Jfth8rR6yJXePGdR6" 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors"
