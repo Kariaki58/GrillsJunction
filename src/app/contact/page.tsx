@@ -26,6 +26,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
+import { WHATSAPP_NUMBER } from '@/lib/payment';
 
 const contactFormSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -123,6 +125,21 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-bold text-stone-900 dark:text-white mb-1">Email Us</h3>
                     <p className="text-stone-600 dark:text-stone-400 text-sm">grillsjunction@gmail.com</p>
+                  </div>
+                </a>
+
+                <a
+                  href={`https://wa.me/${WHATSAPP_NUMBER}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-4 p-4 rounded-2xl hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors group"
+                >
+                  <div className="bg-primary/10 p-3 rounded-xl group-hover:bg-primary group-hover:text-white transition-colors">
+                    <WhatsAppIcon className="w-6 h-6 text-primary group-hover:text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-stone-900 dark:text-white mb-1">WhatsApp</h3>
+                    <p className="text-stone-600 dark:text-stone-400 text-sm">{WHATSAPP_NUMBER}</p>
                   </div>
                 </a>
 
