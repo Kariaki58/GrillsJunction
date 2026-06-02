@@ -151,7 +151,7 @@ export default function ContactPage() {
                     <h3 className="font-bold text-stone-900 dark:text-white mb-1">Our Location</h3>
                     <p className="text-stone-600 dark:text-stone-400 text-sm mb-3">31 Santos Ave, Abule Egba, Lagos Mainland 100276, Lagos</p>
                     <a 
-                      href="https://maps.app.goo.gl/Jfth8rR6yJXePGdR6" 
+                      href="https://maps.app.goo.gl/5Cz64AykH4QHBds2A" 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors"

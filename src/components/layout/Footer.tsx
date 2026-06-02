@@ -51,7 +51,7 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="https://maps.app.goo.gl/Jfth8rR6yJXePGdR6" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-primary transition-colors">
+                <a href="https://maps.app.goo.gl/5Cz64AykH4QHBds2A" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-primary transition-colors">
                   <MapPin className="w-5 h-5 text-primary" />
                   Find us on Google Maps
                 </a>
