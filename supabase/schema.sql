@@ -149,3 +149,4 @@ INSERT INTO public.menu_items (name, price, rating, "desc", image, badge) VALUES
 INSERT INTO public.site_settings (id, business_name, site_title, site_description, address, city, state, zip_code, opening_time, closing_time, delivery_fee, minimum_order, maintenance_mode, maintenance_message)
 VALUES
 (1, 'GrillsJunction', 'GrillsJunction | Lagos Premium BBQ Experience', 'Luxury African BBQ specializing in Asun, Grilled Chicken, Catfish, and more.', '31 Santos Ave', 'Abule Egba', 'Lagos', '100276', '10:00', '23:59', 2000, 10000, false, 'We are currently under maintenance. Please try again later.');
+

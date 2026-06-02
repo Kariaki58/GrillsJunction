@@ -4,4 +4,4 @@ export const PAYMENT_DETAILS = {
   accountName: 'Grillsjunction',
 } as const;
 
-export const WHATSAPP_NUMBER = '2347017398454';
+export const WHATSAPP_NUMBER = '2348140609724';
