@@ -3,7 +3,7 @@ import './globals.css';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { MobileHeader } from '@/components/layout/MobileHeader';
 import { Navbar } from '@/components/layout/Navbar';
-import { FloatingWhatsApp } from '@/components/ui/FloatingWhatsApp';
+// import { FloatingWhatsApp } from '@/components/ui/FloatingWhatsApp';
 import { Providers } from '@/components/providers';
 import { NavigationWrapper } from '@/components/layout/NavigationWrapper';
 import { MainWrapper } from '@/components/layout/MainWrapper';
@@ -42,7 +42,7 @@ export default function RootLayout({
           </NavigationWrapper>
           <NavigationWrapper>
             <MobileNav />
-            <FloatingWhatsApp />
+            {/* <FloatingWhatsApp /> */}
           </NavigationWrapper>
         </Providers>
         <Analytics/>
