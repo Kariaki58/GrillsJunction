@@ -33,11 +33,30 @@ const stats = [
 
 const PAGE_SIZE = 10;
 
+// Categories are derived from the menu item names (no backend column needed).
+// Each rule maps a set of keywords to a category label; the first match wins.
+// Anything that isn't a Shawarma or a Drink falls back to "Grills".
+const DEFAULT_CATEGORY = 'Grills'
+
+const CATEGORY_RULES: { name: string; match: RegExp }[] = [
+  { name: 'Shawarma', match: /shawarma|shawama|schawarma/i },
+  { name: 'Drinks', match: /cocktail|drink|juice|water|soda|wine|beer|smoothie|zobo|chapman|malt|mocktail/i },
+]
+
+// Display order for the toggle pills (only those with dishes are shown).
+const CATEGORY_ORDER = ['Shawarma', 'Drinks', DEFAULT_CATEGORY]
+
+function getCategory(name: string): string {
+  const rule = CATEGORY_RULES.find((r) => r.match.test(name))
+  return rule ? rule.name : DEFAULT_CATEGORY
+}
+
 export default function Home() {
   const heroImage = PlaceHolderImages.find(img => img.id === 'hero-bg')
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('All')
   const [page, setPage] = useState(1)
   const [expandedDescId, setExpandedDescId] = useState<number | null>(null)
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(defaultSiteSettings)
@@ -88,9 +107,22 @@ export default function Home() {
     loadSiteSettings()
   }, [])
 
+  // Build the list of category pills from the dishes we actually have,
+  // keeping a sensible order and always leading with "All".
+  const categories = useMemo(() => {
+    const present = new Set(menuItems.map((item) => getCategory(item.name)))
+    const ordered = CATEGORY_ORDER.filter((name) => present.has(name))
+    return ['All', ...ordered]
+  }, [menuItems])
+
   const filteredItems = useMemo(
-    () => menuItems.filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase())),
-    [menuItems, searchQuery]
+    () =>
+      menuItems.filter((item) => {
+        const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase())
+        const matchesCategory = selectedCategory === 'All' || getCategory(item.name) === selectedCategory
+        return matchesSearch && matchesCategory
+      }),
+    [menuItems, searchQuery, selectedCategory]
   )
 
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE))
@@ -99,7 +131,14 @@ export default function Home() {
   // Keep the current page valid when the filter/result set changes.
   useEffect(() => {
     setPage(1)
-  }, [searchQuery])
+  }, [searchQuery, selectedCategory])
+
+  // If the active category disappears (e.g. data reloads), fall back to "All".
+  useEffect(() => {
+    if (!categories.includes(selectedCategory)) {
+      setSelectedCategory('All')
+    }
+  }, [categories, selectedCategory])
 
   const currentPage = Math.min(page, totalPages)
   const pagedItems = filteredItems.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
@@ -200,9 +239,36 @@ export default function Home() {
           <p className="text-center text-xs md:text-sm text-muted-foreground mt-4">
             {filteredItems.length} {filteredItems.length === 1 ? 'dish' : 'dishes'}
             {searchQuery ? ` matching “${searchQuery}”` : ' on the grill'}
+            {selectedCategory !== 'All' ? ` in ${selectedCategory}` : ''}
           </p>
         )}
       </div>
+
+      {/* Category toggle — derived from the menu names, no backend needed */}
+      {!isLoading && categories.length > 1 && (
+        <div className="mb-8 md:mb-10 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex gap-2 md:gap-3 overflow-x-auto no-scrollbar pb-1 sm:flex-wrap sm:justify-center">
+            {categories.map((category) => {
+              const isActive = category === selectedCategory
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setSelectedCategory(category)}
+                  aria-pressed={isActive}
+                  className={`shrink-0 rounded-full px-4 md:px-5 h-9 md:h-10 text-sm md:text-base font-bold border transition-all ${
+                    isActive
+                      ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                      : 'glass border-border text-muted-foreground hover:text-foreground hover:border-primary/40'
+                  }`}
+                >
+                  {category}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center py-20">
