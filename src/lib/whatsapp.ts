@@ -34,6 +34,9 @@ export function buildOrderWhatsAppMessage(
   lines.push('', 'Items:');
   order.items.forEach((item) => {
     lines.push(`• ${item.name} × ${item.qty} — ${formatNaira(item.price * item.qty)}`);
+    if (item.addons?.length) {
+      lines.push(`   Extras: ${item.addons.map((a) => a.name).join(', ')}`);
+    }
   });
 
   lines.push(

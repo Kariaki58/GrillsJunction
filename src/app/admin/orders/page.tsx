@@ -18,6 +18,7 @@ interface OrderItem {
   quantity: number;
   price: number;
   image: string;
+  addons: { name: string; price: number }[] | null;
 }
 
 interface Order {
@@ -499,6 +500,11 @@ export default function OrdersPage() {
                       <div key={index} className="flex justify-between items-center p-2 bg-slate-50 rounded">
                         <div>
                           <p className="font-medium text-slate-900">{item.name}</p>
+                          {Array.isArray(item.addons) && item.addons.length > 0 && (
+                            <p className="text-xs text-orange-600">
+                              Extras: {item.addons.map((a) => a.name).join(', ')}
+                            </p>
+                          )}
                           <p className="text-sm text-slate-500">Qty: {item.quantity}</p>
                         </div>
                         <p className="font-medium">₦{(item.price * item.quantity).toLocaleString()}</p>

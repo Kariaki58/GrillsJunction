@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { CopyButton } from '@/components/ui/copy-button';
 import { type Order } from '@/lib/orders';
+import { buildCartId } from '@/context/cart-context';
 import { formatNaira } from '@/lib/format';
 import { getWhatsAppOrderUrl, type BankDetails } from '@/lib/whatsapp';
 import { downloadOrderReceipt } from '@/lib/receipt-pdf';
@@ -55,6 +56,7 @@ interface ServerOrderItem {
   price: number | string;
   quantity: number;
   image: string | null;
+  addons: { name: string; price: number }[] | null;
 }
 
 interface ServerOrder {
@@ -91,13 +93,20 @@ function mapServerOrder(row: ServerOrder): Order {
       area: row.fulfillment_area ?? '',
       notes: row.fulfillment_notes ?? '',
     },
-    items: (row.order_items ?? []).map((it) => ({
-      id: it.menu_item_id ?? 0,
-      name: it.name,
-      price: Number(it.price),
-      qty: it.quantity,
-      image: it.image ?? '',
-    })),
+    items: (row.order_items ?? []).map((it) => {
+      const addons = Array.isArray(it.addons) ? it.addons : [];
+      const price = Number(it.price);
+      return {
+        id: it.menu_item_id ?? 0,
+        cartId: buildCartId(it.menu_item_id ?? 0, addons),
+        name: it.name,
+        price,
+        basePrice: price - addons.reduce((sum, a) => sum + Number(a.price), 0),
+        qty: it.quantity,
+        image: it.image ?? '',
+        addons,
+      };
+    }),
     subtotal: Number(row.subtotal),
     total: Number(row.total),
     paymentConfirmed: row.payment_confirmed,

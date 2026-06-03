@@ -30,7 +30,7 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-3 sm:space-y-4 md:space-y-6">
             {items.map((item) => (
               <motion.div
-                key={item.id}
+                key={item.cartId}
                 layout
                 className="glass-card rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 flex gap-3 sm:gap-4 md:gap-6 items-center border-border shadow-xl"
               >
@@ -50,6 +50,11 @@ export default function CartPage() {
                   <h3 className="text-sm sm:text-base md:text-lg font-bold mb-0.5 sm:mb-1 line-clamp-2 break-words">
                     {item.name}
                   </h3>
+                  {item.addons.length > 0 && (
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 line-clamp-2">
+                      {item.addons.map((a) => a.name).join(', ')}
+                    </p>
+                  )}
                   <p className="text-primary font-bold text-xs sm:text-sm md:text-base">
                     {formatNaira(item.price)}
                   </p>
@@ -60,7 +65,7 @@ export default function CartPage() {
                   <div className="flex items-center bg-muted rounded-lg sm:rounded-xl border border-border p-0.5 sm:p-1">
                     <button
                       type="button"
-                      onClick={() => updateQty(item.id, item.qty - 1)}
+                      onClick={() => updateQty(item.cartId, item.qty - 1)}
                       className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-muted-foreground/10 rounded-md sm:rounded-lg transition-colors active:scale-95 touch-manipulation"
                       aria-label="Decrease quantity"
                     >
@@ -71,7 +76,7 @@ export default function CartPage() {
                     </span>
                     <button
                       type="button"
-                      onClick={() => updateQty(item.id, item.qty + 1)}
+                      onClick={() => updateQty(item.cartId, item.qty + 1)}
                       className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 flex items-center justify-center hover:bg-muted-foreground/10 rounded-md sm:rounded-lg transition-colors active:scale-95 touch-manipulation"
                       aria-label="Increase quantity"
                     >
@@ -80,7 +85,7 @@ export default function CartPage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => removeItem(item.cartId)}
                     className="text-muted-foreground hover:text-destructive transition-colors p-1.5 sm:p-1 active:scale-95 touch-manipulation"
                     aria-label="Remove item"
                   >

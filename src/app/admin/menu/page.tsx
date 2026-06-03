@@ -15,6 +15,11 @@ import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 
+interface Addon {
+  name: string;
+  price: number;
+}
+
 interface MenuItem {
   id: number;
   name: string;
@@ -23,6 +28,7 @@ interface MenuItem {
   rating: number;
   badge: string | null;
   image: string;
+  addons: Addon[] | null;
 }
 
 interface MenuItemFormData {
@@ -32,6 +38,7 @@ interface MenuItemFormData {
   rating: number;
   badge: string;
   image: string;
+  addons: Addon[];
 }
 
 export default function MenuPage() {
@@ -50,6 +57,7 @@ export default function MenuPage() {
     rating: 5.0,
     badge: '',
     image: '',
+    addons: [],
   });
 
   const supabase = createClient();
@@ -84,6 +92,7 @@ export default function MenuPage() {
       rating: 5.0,
       badge: '',
       image: '',
+      addons: [],
     });
     setDialogOpen(true);
   };
@@ -98,8 +107,31 @@ export default function MenuPage() {
       rating: item.rating,
       badge: item.badge || '',
       image: item.image || '',
+      addons: Array.isArray(item.addons) ? item.addons : [],
     });
     setDialogOpen(true);
+  };
+
+  const handleAddAddon = () => {
+    setFormData((prev) => ({ ...prev, addons: [...prev.addons, { name: '', price: 0 }] }));
+  };
+
+  const handleAddonChange = (index: number, field: keyof Addon, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      addons: prev.addons.map((addon, i) =>
+        i === index
+          ? { ...addon, [field]: field === 'price' ? Number(value) : value }
+          : addon,
+      ),
+    }));
+  };
+
+  const handleRemoveAddon = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      addons: prev.addons.filter((_, i) => i !== index),
+    }));
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
@@ -137,6 +169,11 @@ export default function MenuPage() {
       }
     }
 
+    // Keep only complete extras (a name and a non-negative price).
+    const cleanAddons = formData.addons
+      .map((a) => ({ name: a.name.trim(), price: Number(a.price) || 0 }))
+      .filter((a) => a.name.length > 0);
+
     const itemToSave = {
       name: formData.name,
       desc: formData.desc,
@@ -144,6 +181,7 @@ export default function MenuPage() {
       rating: formData.rating,
       badge: formData.badge || null,
       image: imageUrl,
+      addons: cleanAddons,
     };
 
     if (editingItem) {
@@ -300,6 +338,11 @@ export default function MenuPage() {
                           <div>
                             <p className="font-medium text-slate-900">{item.name}</p>
                             <p className="text-sm text-slate-500">{item.desc}</p>
+                            {Array.isArray(item.addons) && item.addons.length > 0 && (
+                              <p className="text-xs text-orange-600 font-medium mt-0.5">
+                                {item.addons.length} extra{item.addons.length > 1 ? 's' : ''}
+                              </p>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="font-medium">₦{Number(item.price).toLocaleString()}</TableCell>
@@ -446,6 +489,55 @@ export default function MenuPage() {
                   onChange={(e) => setFormData({ ...formData, rating: Number(e.target.value) })}
                 />
               </div>
+            </div>
+
+            <div className="rounded-lg border border-slate-200 p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-semibold">Extras / Add-ons (optional)</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Optional items customers can add, e.g. Extra Beef ₦1,000.
+                  </p>
+                </div>
+                <Button type="button" size="sm" variant="outline" onClick={handleAddAddon} className="gap-1 shrink-0">
+                  <Plus className="h-3.5 w-3.5" />
+                  Add
+                </Button>
+              </div>
+
+              {formData.addons.length === 0 ? (
+                <p className="text-xs text-muted-foreground italic">No extras added yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {formData.addons.map((addon, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Input
+                        value={addon.name}
+                        onChange={(e) => handleAddonChange(index, 'name', e.target.value)}
+                        placeholder="e.g. Extra Beef"
+                        className="flex-1"
+                      />
+                      <Input
+                        type="number"
+                        value={addon.price}
+                        onChange={(e) => handleAddonChange(index, 'price', e.target.value)}
+                        placeholder="Price"
+                        className="w-24"
+                      />
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleRemoveAddon(index)}
+                        className="text-destructive shrink-0 h-9 w-9"
+                        aria-label="Remove extra"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex gap-2 pt-4">

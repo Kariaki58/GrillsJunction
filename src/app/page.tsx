@@ -7,12 +7,19 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Flame, Truck, ShieldCheck, ArrowRight, Star, Plus, Search, Loader2, ShoppingCart, ChevronLeft, ChevronRight, Utensils, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { PlaceHolderImages } from '@/lib/placeholder-images'
 import { createClient } from '@/lib/supabase/client'
 import { defaultSiteSettings, type SiteSettings } from '@/lib/site-settings'
 import { useCart } from '@/context/cart-context'
 import { useToast } from '@/hooks/use-toast'
 import { formatNaira } from '@/lib/format'
+
+interface Addon {
+  name: string;
+  price: number;
+}
 
 interface MenuItem {
   id: number;
@@ -22,6 +29,7 @@ interface MenuItem {
   desc: string;
   image: string;
   badge: string | null;
+  addons: Addon[] | null;
 }
 
 const stats = [
@@ -60,21 +68,51 @@ export default function Home() {
   const [page, setPage] = useState(1)
   const [expandedDescId, setExpandedDescId] = useState<number | null>(null)
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(defaultSiteSettings)
+  const [addonItem, setAddonItem] = useState<MenuItem | null>(null)
+  const [selectedAddons, setSelectedAddons] = useState<Record<number, boolean>>({})
   const supabase = createClient()
   const { addItem, itemCount, subtotal } = useCart()
   const { toast } = useToast()
 
-  const handleAddToCart = (item: MenuItem) => {
+  const addToCart = (item: MenuItem, addons: Addon[] = []) => {
+    const extrasTotal = addons.reduce((sum, a) => sum + a.price, 0);
     addItem({
       id: item.id,
       name: item.name,
-      price: item.price,
+      price: item.price + extrasTotal,
+      basePrice: item.price,
       image: item.image,
+      addons,
     });
+    const extrasNote = addons.length ? ` (+${addons.length} extra${addons.length > 1 ? 's' : ''})` : '';
     toast({
       title: 'Added to cart',
-      description: `${item.name} — ${formatNaira(item.price)}`,
+      description: `${item.name}${extrasNote} — ${formatNaira(item.price + extrasTotal)}`,
     });
+  };
+
+  const handleAddToCart = (item: MenuItem) => {
+    // If the dish has optional extras, let the customer choose them first.
+    if (Array.isArray(item.addons) && item.addons.length > 0) {
+      setAddonItem(item);
+      setSelectedAddons({});
+      return;
+    }
+    addToCart(item);
+  };
+
+  const chosenAddons = addonItem?.addons
+    ? addonItem.addons.filter((_, i) => selectedAddons[i])
+    : [];
+  const addonDialogTotal = addonItem
+    ? addonItem.price + chosenAddons.reduce((sum, a) => sum + a.price, 0)
+    : 0;
+
+  const confirmAddons = () => {
+    if (!addonItem) return;
+    addToCart(addonItem, chosenAddons);
+    setAddonItem(null);
+    setSelectedAddons({});
   };
 
   useEffect(() => {
@@ -341,6 +379,9 @@ export default function Home() {
                           <div className="min-w-0">
                             {/* <span className="text-[10px] md:text-xs text-muted-foreground block font-bold uppercase tracking-wide">Price</span> */}
                             <span className="text-base md:text-xl font-bold">{formatNaira(item.price)}</span>
+                            {Array.isArray(item.addons) && item.addons.length > 0 && (
+                              <span className="block text-[10px] md:text-xs text-primary font-semibold">+ extras available</span>
+                            )}
                           </div>
                           <Button
                             type="button"
@@ -520,6 +561,51 @@ export default function Home() {
       </div>
     </div>
   </section>
+
+  {/* Extras / add-ons picker */}
+  <Dialog open={!!addonItem} onOpenChange={(open) => { if (!open) { setAddonItem(null); setSelectedAddons({}); } }}>
+    <DialogContent className="max-w-md">
+      <DialogHeader>
+        <DialogTitle>{addonItem?.name}</DialogTitle>
+        <DialogDescription>
+          Add any extras you&apos;d like. Base price {addonItem ? formatNaira(addonItem.price) : ''}.
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="space-y-2 max-h-[50vh] overflow-y-auto">
+        {addonItem?.addons?.map((addon, index) => (
+          <label
+            key={index}
+            htmlFor={`addon-${index}`}
+            className="flex items-center justify-between gap-3 rounded-xl border border-border p-3 cursor-pointer hover:border-primary/40 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id={`addon-${index}`}
+                checked={!!selectedAddons[index]}
+                onCheckedChange={(checked) =>
+                  setSelectedAddons((prev) => ({ ...prev, [index]: checked === true }))
+                }
+              />
+              <span className="font-medium text-sm">{addon.name}</span>
+            </div>
+            <span className="text-sm font-bold text-primary">+{formatNaira(addon.price)}</span>
+          </label>
+        ))}
+      </div>
+
+      <DialogFooter className="sm:justify-between sm:items-center gap-3">
+        <div className="text-sm">
+          <span className="text-muted-foreground">Total: </span>
+          <span className="font-bold text-lg">{formatNaira(addonDialogTotal)}</span>
+        </div>
+        <Button onClick={confirmAddons} className="rounded-full bg-primary hover:bg-primary/90 text-white font-bold">
+          <Plus className="w-4 h-4 mr-1.5" />
+          Add to cart
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 
   {/* Floating cart bar (mobile) */}
   {itemCount > 0 && (

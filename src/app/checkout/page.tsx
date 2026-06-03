@@ -86,6 +86,7 @@ export default function CheckoutPage() {
         price: item.price,
         qty: item.qty,
         image: item.image,
+        addons: item.addons,
       })),
     };
 
@@ -333,7 +334,7 @@ export default function CheckoutPage() {
               {/* Items List */}
               <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6 max-h-48 sm:max-h-56 md:max-h-64 overflow-y-auto custom-scrollbar">
                 {items.map((item) => (
-                  <div key={item.id} className="flex gap-2 sm:gap-3 items-center">
+                  <div key={item.cartId} className="flex gap-2 sm:gap-3 items-center">
                     <div className="relative w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg sm:rounded-xl overflow-hidden shrink-0 bg-muted">
                       <Image
                         src={getImageSrc(item.image)}
@@ -345,6 +346,11 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-xs sm:text-sm truncate">{item.name}</p>
+                      {item.addons.length > 0 && (
+                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                          {item.addons.map((a) => a.name).join(', ')}
+                        </p>
+                      )}
                       <p className="text-[10px] sm:text-xs text-muted-foreground">
                         {item.qty} × {formatNaira(item.price)}
                       </p>

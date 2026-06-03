@@ -169,7 +169,11 @@ export async function downloadOrderReceipt(
   drawTableHeader();
 
   order.items.forEach((item, idx) => {
-    const lines = doc.splitTextToSize(item.name, nameW) as string[];
+    const addons = Array.isArray(item.addons) ? item.addons : [];
+    const nameText = addons.length
+      ? `${item.name}\n+ ${addons.map((a) => a.name).join(', ')}`
+      : item.name;
+    const lines = doc.splitTextToSize(nameText, nameW) as string[];
     const rowH = Math.max(8.5, 3.4 + lines.length * 4.6);
 
     if (y + rowH > pageH - 60) {

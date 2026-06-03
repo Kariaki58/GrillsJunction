@@ -5,6 +5,7 @@ export interface OrderEmailItem {
   name: string;
   price: number;
   qty: number;
+  addons?: { name: string; price: number }[];
 }
 
 export interface OrderEmailData {
@@ -38,17 +39,23 @@ const esc = (s: unknown) =>
 
 function itemRows(items: OrderEmailItem[]): string {
   return items
-    .map(
-      (it) => `
+    .map((it) => {
+      const addons = Array.isArray(it.addons) ? it.addons : [];
+      const addonLine = addons.length
+        ? `<br/><span style="color:${MUTED};font-size:12px;">+ ${addons
+            .map((a) => esc(a.name))
+            .join(', ')}</span>`
+        : '';
+      return `
       <tr>
         <td style="padding:10px 0;border-bottom:1px solid ${BORDER};color:${DARK};font-size:14px;">
-          ${esc(it.name)} <span style="color:${MUTED};">× ${it.qty}</span>
+          ${esc(it.name)} <span style="color:${MUTED};">× ${it.qty}</span>${addonLine}
         </td>
         <td style="padding:10px 0;border-bottom:1px solid ${BORDER};color:${DARK};font-size:14px;text-align:right;white-space:nowrap;">
           ${ngn(it.price * it.qty)}
         </td>
-      </tr>`
-    )
+      </tr>`;
+    })
     .join('');
 }
 

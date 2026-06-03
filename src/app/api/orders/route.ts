@@ -161,13 +161,14 @@ export async function POST(request: NextRequest) {
 
     // --- Insert order items ---
     const orderId = orderResult.id;
-    const orderItemsData = items.map((item: { id: number; name: string; price: number; qty: number; image?: string }) => ({
+    const orderItemsData = items.map((item: { id: number; name: string; price: number; qty: number; image?: string; addons?: { name: string; price: number }[] }) => ({
       order_id: orderId,
       menu_item_id: item.id,
       name: item.name,
       price: item.price,
       quantity: item.qty,
       image: item.image || null,
+      addons: Array.isArray(item.addons) ? item.addons : [],
     }));
 
 
@@ -205,10 +206,11 @@ export async function POST(request: NextRequest) {
         fulfillmentAddress: fulfillment_address,
         fulfillmentArea: fulfillment_area,
         fulfillmentNotes: fulfillment_notes,
-        items: (items as { name: string; price: number; qty: number }[]).map((it) => ({
+        items: (items as { name: string; price: number; qty: number; addons?: { name: string; price: number }[] }[]).map((it) => ({
           name: it.name,
           price: Number(it.price),
           qty: Number(it.qty),
+          addons: Array.isArray(it.addons) ? it.addons : [],
         })),
         subtotal: Number(subtotal),
         total: Number(total),
