@@ -48,7 +48,7 @@ const DEFAULT_CATEGORY = 'Grills'
 
 const CATEGORY_RULES: { name: string; match: RegExp }[] = [
   { name: 'Shawarma', match: /shawarma|shawama|schawarma/i },
-  { name: 'Drinks', match: /cocktail|drink|juice|water|soda|wine|beer|smoothie|zobo|chapman|malt|mocktail/i },
+  { name: 'Drinks', match: /cocktail|mocktail|milkshake|shake|drink|juice|water|soda|wine|beer|smoothie|zobo|chapman|malt/i },
 ]
 
 // Display order for the toggle pills (only those with dishes are shown).
