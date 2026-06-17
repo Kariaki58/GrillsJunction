@@ -21,8 +21,8 @@ export function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 hidden md:block">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-6">
-        <div className="glass h-16 md:h-20 rounded-full flex items-center justify-between px-6 lg:px-8 shadow-2xl">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-5">
+        <div className="glass h-16 md:h-[4.5rem] rounded-full flex items-center justify-between px-6 lg:px-8">
           <Link href="/" className="flex items-center shrink-0 group py-1">
             <Image
               src="/logo.png"
@@ -40,8 +40,8 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'text-sm font-medium transition-colors hover:text-primary',
-                  pathname === link.href ? 'text-primary' : 'text-muted-foreground',
+                  'text-sm font-medium transition-colors ease-apple hover:text-foreground',
+                  pathname === link.href ? 'text-foreground' : 'text-muted-foreground',
                 )}
               >
                 {link.name}
@@ -71,9 +71,9 @@ export function Navbar() {
             </Link>
             <Button
               asChild
-              className="rounded-full px-6 bg-primary hover:bg-primary/90 text-white font-bold"
+              className="rounded-full px-6 bg-primary hover:bg-primary/90 text-white font-semibold transition-all ease-apple hover:scale-[1.03] active:scale-100"
             >
-              <Link href="/#menu">ORDER NOW</Link>
+              <Link href="/#menu">Order Now</Link>
             </Button>
           </div>
         </div>

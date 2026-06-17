@@ -18,7 +18,7 @@ export function MobileNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden pb-safe">
-      <div className="mx-4 mb-4 glass rounded-3xl h-16 flex items-center justify-around px-2 shadow-2xl border-t border-border">
+      <div className="mx-4 mb-4 glass rounded-[1.75rem] h-16 flex items-center justify-around px-2">
         {mobileTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = pathname === tab.href;
@@ -31,9 +31,9 @@ export function MobileNav() {
             >
               <div
                 className={cn(
-                  'p-2 rounded-xl transition-all duration-300',
+                  'p-2 rounded-2xl transition-all duration-300 ease-apple',
                   isActive
-                    ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/20'
+                    ? 'bg-primary text-white'
                     : 'text-muted-foreground hover:text-foreground',
                 )}
               >

@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 export function Footer() {
   return (
-    <footer className="bg-stone-950 text-stone-300 py-12 md:py-16 mt-20 border-t border-stone-800">
+    <footer className="bg-stone-950 text-stone-300 pt-16 md:pt-20 pb-10 mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
           
@@ -26,7 +26,7 @@ export function Footer() {
 
           {/* Quick Links */}
           <div className="space-y-6">
-            <h4 className="text-white font-bold text-lg font-heading tracking-wide uppercase">Quick Links</h4>
+            <h4 className="text-white/50 font-semibold text-xs tracking-[0.18em] uppercase">Quick Links</h4>
             <ul className="space-y-4 text-sm font-medium">
               <li>
                 <Link href="/#menu" className="hover:text-primary transition-colors">Order Now</Link>
@@ -42,7 +42,7 @@ export function Footer() {
 
           {/* Contact Details */}
           <div className="space-y-6">
-            <h4 className="text-white font-bold text-lg font-heading tracking-wide uppercase">Connect</h4>
+            <h4 className="text-white/50 font-semibold text-xs tracking-[0.18em] uppercase">Connect</h4>
             <ul className="space-y-4 text-sm font-medium">
               <li>
                 <a href="mailto:grillsjunction@gmail.com" className="flex items-center gap-3 hover:text-primary transition-colors">
@@ -83,13 +83,9 @@ export function Footer() {
 
         </div>
 
-        {/* <div className="mt-16 pt-8 border-t border-stone-800 text-center text-sm text-stone-500 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="mt-14 pt-8 border-t border-white/10 text-center text-xs md:text-sm text-stone-500">
           <p>&copy; {new Date().getFullYear()} grillsJunction. All rights reserved.</p>
-          <div className="flex gap-4">
-            <Link href="#" className="hover:text-stone-300 transition-colors">Privacy Policy</Link>
-            <Link href="#" className="hover:text-stone-300 transition-colors">Terms of Service</Link>
-          </div>
-        </div> */}
+        </div>
       </div>
     </footer>
   );

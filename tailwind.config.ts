@@ -72,7 +72,23 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      boxShadow: {
+        soft: 'var(--shadow-soft)',
+        card: 'var(--shadow-card)',
+        lift: 'var(--shadow-lift)',
+      },
+      transitionTimingFunction: {
+        apple: 'cubic-bezier(.4, 0, .2, 1)',
+      },
       keyframes: {
+        'fade-up': {
+          from: { opacity: '0', transform: 'translateY(14px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'marquee': {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
         'accordion-down': {
           from: {
             height: '0',
@@ -98,6 +114,8 @@ export default {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'float': 'float 3s ease-in-out infinite',
+        'fade-up': 'fade-up 0.6s cubic-bezier(.4,0,.2,1) both',
+        'marquee': 'marquee 38s linear infinite',
       },
     },
   },

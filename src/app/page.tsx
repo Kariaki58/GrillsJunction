@@ -195,11 +195,11 @@ export default function Home() {
         src={heroImage?.imageUrl || ''}
         alt="Premium Barbecue"
         fill
-        className="object-cover brightness-[0.55]"
+        className="object-cover brightness-[0.6]"
         priority
         data-ai-hint="luxury barbecue"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/75" />
     </div>
 
     <div className="relative z-10 text-center max-w-4xl px-4 pt-24 md:pt-32">
@@ -209,23 +209,23 @@ export default function Home() {
         transition={{ duration: 0.8 }}
         className="max-w-5xl mx-auto"
       >
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-headline font-bold mb-6 tracking-tight text-white leading-tight">
+        <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-headline font-bold mb-6 tracking-apple text-white leading-[1.02]">
           {siteSettings.siteTitle}
         </h1>
-        <p className="text-base md:text-lg lg:text-xl text-white/80 mb-10 max-w-3xl mx-auto leading-relaxed font-light">
+        <p className="text-lg md:text-xl lg:text-2xl text-white/75 mb-11 max-w-2xl mx-auto leading-relaxed font-light tracking-tight">
           {siteSettings.siteDescription}
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-          <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90 text-white h-14 px-10 text-lg font-bold shadow-xl shadow-primary/20 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-14">
+          <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90 text-white h-[3.25rem] px-9 text-[1.05rem] font-semibold w-full sm:w-auto transition-all ease-apple hover:scale-[1.02] active:scale-100">
             <Link href="/#menu">Order Now</Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="rounded-full border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white h-14 px-10 text-lg font-bold w-full sm:w-auto backdrop-blur-sm">
+          <Button asChild variant="ghost" size="lg" className="rounded-full bg-white/10 text-white hover:bg-white/20 hover:text-white h-[3.25rem] px-9 text-[1.05rem] font-semibold w-full sm:w-auto backdrop-blur-md transition-all ease-apple">
             <Link href="/#menu">Explore Menu</Link>
           </Button>
         </div>
 
-        <p className="text-[10px] sm:text-xs md:text-sm tracking-[0.25em] sm:tracking-[0.3em] font-medium text-white/60 uppercase">
-          Order Today <span className="mx-1.5 sm:mx-3 text-primary/80">•</span> Takeaway <span className="mx-1.5 sm:mx-3 text-primary/80">•</span> Delivery
+        <p className="text-[11px] sm:text-xs md:text-sm tracking-[0.28em] font-medium text-white/55 uppercase">
+          Order Today <span className="mx-2 sm:mx-3 text-primary">•</span> Takeaway <span className="mx-2 sm:mx-3 text-primary">•</span> Delivery
         </p>
       </motion.div>
     </div>
@@ -234,18 +234,18 @@ export default function Home() {
   {/* Full Menu — The Grill List */}
   <section id="menu" className="py-16 md:py-24 px-4 bg-background scroll-mt-24">
     <div className="max-w-7xl mx-auto">
-      <div className="text-center mb-8 md:mb-12">
-        <p className="text-primary font-bold text-xs md:text-sm tracking-widest uppercase mb-2">Our Specialties</p>
-        <h2 className="text-3xl md:text-5xl font-headline font-bold">The Grill List</h2>
-        <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto mt-3">
-          Explore our premium selection of fire-grilled delicacies, prepared fresh in Abule Egba, Lagos.
+      <div className="text-center mb-10 md:mb-16">
+        <p className="text-primary font-semibold text-xs md:text-sm tracking-[0.2em] uppercase mb-3">Our Specialties</p>
+        <h2 className="text-4xl md:text-6xl font-headline font-bold tracking-apple">The Grill List</h2>
+        <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto mt-4 leading-relaxed">
+          Premium fire-grilled delicacies, prepared fresh in Abule Egba, Lagos.
         </p>
       </div>
 
       {/* Friendly note about hours & prep times */}
       <div className="max-w-3xl mx-auto mb-8 md:mb-10">
-        <div className="rounded-2xl md:rounded-3xl border border-primary/20 bg-primary/5 p-4 md:p-6 flex gap-3 md:gap-4 text-left">
-          <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+        <div className="rounded-2xl md:rounded-3xl bg-secondary/60 p-5 md:p-6 flex gap-3 md:gap-4 text-left shadow-soft">
+          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
             <Clock className="w-5 h-5 text-primary" />
           </div>
           <div className="text-sm md:text-[0.95rem] leading-relaxed text-foreground/80">
@@ -265,10 +265,10 @@ export default function Home() {
       {/* Search */}
       <div className="mb-6 md:mb-10">
         <div className="max-w-2xl mx-auto relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <input
             placeholder="Search for Asun, Chicken, Catfish..."
-            className="h-12 md:h-14 w-full pl-12 pr-4 rounded-full glass border-border text-base md:text-lg shadow-xl focus:ring-primary outline-none focus:border-primary/50"
+            className="h-12 md:h-14 w-full pl-12 pr-4 rounded-full bg-card border border-border text-base md:text-lg shadow-soft outline-none transition-all ease-apple focus:border-primary/40 focus:shadow-card"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -294,10 +294,10 @@ export default function Home() {
                   type="button"
                   onClick={() => setSelectedCategory(category)}
                   aria-pressed={isActive}
-                  className={`shrink-0 rounded-full px-4 md:px-5 h-9 md:h-10 text-sm md:text-base font-bold border transition-all ${
+                  className={`shrink-0 rounded-full px-5 h-10 text-sm md:text-base font-semibold border transition-all ease-apple ${
                     isActive
-                      ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                      : 'glass border-border text-muted-foreground hover:text-foreground hover:border-primary/40'
+                      ? 'bg-foreground text-background border-foreground'
+                      : 'bg-card border-border text-muted-foreground hover:text-foreground hover:border-foreground/30'
                   }`}
                 >
                   {category}
@@ -334,14 +334,14 @@ export default function Home() {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ delay: Math.min(idx, 8) * 0.05 }}
                   >
-                    <div className="glass-card rounded-2xl md:rounded-[2rem] overflow-hidden flex flex-col h-full shadow-md hover:shadow-xl border border-border hover:border-primary/30 transition-all duration-500 active:scale-[0.98] bg-white dark:bg-slate-900">
-                      <div className="relative aspect-[4/5] overflow-hidden bg-slate-100 dark:bg-slate-800">
+                    <div className="group rounded-3xl overflow-hidden flex flex-col h-full bg-card border border-border shadow-soft hover:shadow-card hover:-translate-y-1 transition-all duration-300 ease-apple">
+                      <div className="relative aspect-[4/5] overflow-hidden bg-muted">
                         <Image
                           src={imageSrc}
                           alt={item.name}
                           fill
                           sizes="(max-width: 1024px) 50vw, 25vw"
-                          className="object-cover hover:scale-105 transition-transform duration-700"
+                          className="object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-apple"
                         />
                         {item.badge && (
                           <div className="absolute top-2.5 left-2.5 md:top-4 md:left-4">
@@ -386,7 +386,7 @@ export default function Home() {
                           <Button
                             type="button"
                             onClick={() => handleAddToCart(item)}
-                            className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary hover:bg-primary/90 text-white p-0 shadow-lg shadow-primary/20 shrink-0"
+                            className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-primary hover:bg-primary/90 text-white p-0 shrink-0 transition-all ease-apple hover:scale-105 active:scale-95"
                             aria-label={`Add ${item.name} to cart`}
                           >
                             <Plus className="w-5 h-5 md:w-6 md:h-6" />
@@ -454,33 +454,32 @@ export default function Home() {
   </section>
 
   {/* Why grillsJunction Section */}
-  <section className="py-24 px-4 bg-muted/50">
-    <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-      <div className="relative aspect-square rounded-[3rem] overflow-hidden">
+  <section className="py-24 md:py-32 px-4 bg-muted/40">
+    <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-14 md:gap-20 items-center">
+      <div className="relative aspect-square rounded-[2rem] overflow-hidden shadow-card">
         <Image
           src={PlaceHolderImages.find(i => i.id === 'vibe-1')?.imageUrl || ''}
           alt="grillsJunction lounge"
           fill
           className="object-cover"
         />
-        <div className="absolute inset-0 border-[1.5rem] border-background/20 rounded-[3rem]" />
       </div>
 
       <div>
-        <h2 className="text-4xl md:text-6xl font-headline font-bold mb-8">Why Lagos Loves <br /><span className="text-primary font-body not-italic">grillsJunction</span></h2>
+        <h2 className="text-4xl md:text-6xl font-headline font-bold mb-10 tracking-apple leading-[1.05]">Why Lagos Loves <br /><span className="text-primary font-body not-italic">grillsJunction</span></h2>
 
-        <div className="space-y-8">
+        <div className="space-y-7">
           {[
             { icon: ShieldCheck, title: "Premium Quality Meat", desc: "We source only the finest cuts, hand-picked daily for maximum tenderness." },
             { icon: Flame, title: "The Signature Junction Rub", desc: "Our secret spice blend inspired by traditional Yoruba hearth cooking." },
             { icon: Truck, title: "Lagos Lightning Delivery", desc: "From our grill to your door in Abule Egba and beyond in record time." }
           ].map((item, i) => (
-            <div key={i} className="flex gap-6">
-              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+            <div key={i} className="flex gap-5">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
                 <item.icon className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h4 className="text-xl font-bold mb-2">{item.title}</h4>
+                <h4 className="text-lg md:text-xl font-bold mb-1.5 tracking-tight">{item.title}</h4>
                 <p className="text-muted-foreground leading-relaxed">{item.desc}</p>
               </div>
             </div>
@@ -491,69 +490,65 @@ export default function Home() {
   </section>
 
   {/* Stats Counter */}
-  <section className="py-16 px-4 bg-background">
-    <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+  <section className="py-20 md:py-24 px-4 bg-background">
+    <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
       {stats.map((stat, i) => (
         <div key={i}>
-          <div className="text-4xl md:text-5xl font-bold text-primary mb-2 font-headline">{stat.value}</div>
-          <div className="text-sm uppercase tracking-widest text-muted-foreground font-bold">{stat.label}</div>
+          <div className="text-4xl md:text-6xl font-bold text-foreground mb-2 font-headline tracking-apple">{stat.value}</div>
+          <div className="text-xs md:text-sm uppercase tracking-[0.15em] text-muted-foreground font-medium">{stat.label}</div>
         </div>
       ))}
     </div>
   </section>
 
   {/* Testimonials */}
-  <section className="py-24 px-4 overflow-hidden">
+  <section className="py-24 md:py-32 px-4">
     <div className="max-w-7xl mx-auto">
-      <div className="text-center mb-16">
-         <h2 className="text-4xl md:text-5xl font-headline font-bold">What The Customers Say</h2>
+      <div className="text-center mb-14 md:mb-20">
+         <p className="text-primary font-semibold text-xs md:text-sm tracking-[0.2em] uppercase mb-3">Loved in Lagos</p>
+         <h2 className="text-4xl md:text-6xl font-headline font-bold tracking-apple">What customers say</h2>
       </div>
 
-      <div className="overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
-        <div className="flex flex-nowrap gap-6 md:animate-marquee md:overflow-visible snap-x snap-mandatory scroll-smooth p-4">
+      <div className="flex md:grid md:grid-cols-3 gap-5 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory">
          {[
            { name: "Tunde Ednut", role: "Lagos Foodie", comment: "The Asun is legendary. Best I've had in the Abule Egba area, hands down!" },
            { name: "Seyi Shay", role: "Artist", comment: "grillsJunction is the perfect late-night vibe. Their Catfish is 10/10." },
            { name: "Davido", role: "Customer", comment: "E choke! Best BBQ in the city. No cap." },
            { name: "Chioma", role: "Chef", comment: "The spice level is perfect. Truly premium quality." }
          ].map((review, i) => (
-           <div key={i} className="glass-card p-8 rounded-[2.5rem] min-w-[260px] md:min-w-[400px] flex-shrink-0 snap-start">
-             <div className="flex text-accent mb-4">
+           <div key={i} className="bg-card border border-border shadow-soft p-7 md:p-8 rounded-3xl min-w-[280px] md:min-w-0 flex-shrink-0 snap-start flex flex-col">
+             <div className="flex text-accent mb-5 gap-0.5">
                {[...Array(5)].map((_, j) => <Star key={j} className="w-4 h-4 fill-current" />)}
              </div>
-             <p className="text-lg italic mb-6">"{review.comment}"</p>
-             <div className="flex items-center gap-4">
-               <div>
-                 <p className="font-bold">{review.name}</p>
-               </div>
+             <p className="text-lg leading-relaxed mb-6 flex-1 tracking-tight">"{review.comment}"</p>
+             <div>
+               <p className="font-bold tracking-tight">{review.name}</p>
+               <p className="text-sm text-muted-foreground">{review.role}</p>
              </div>
            </div>
          ))}
       </div>
     </div>
-  </div>
   </section>
 
   {/* Call to Action */}
-  <section className="py-20 px-4 bg-gradient-to-b from-background to-primary/5">
+  <section className="py-20 md:py-28 px-4">
     <div className="max-w-4xl mx-auto">
-      <div className="glass rounded-[3rem] p-8 md:p-16 text-center relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-primary/5 opacity-40" />
-
-        <div className="relative z-10 space-y-6">
-          <h2 className="text-3xl md:text-6xl lg:text-7xl font-headline font-bold leading-tight">
+      <div className="rounded-[2rem] md:rounded-[2.5rem] p-10 md:p-20 text-center bg-foreground text-background">
+        <div className="space-y-7">
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-headline font-bold leading-[1.04] tracking-apple">
             Hungry? <br />
-            <span className="text-primary font-body not-italic">Order Now</span>
+            <span className="text-primary font-body not-italic">Order now.</span>
           </h2>
 
-          <p className="text-base md:text-lg text-muted-foreground max-w-md mx-auto">
-            Premium grill delivered in under 45 minutes
+          <p className="text-base md:text-lg text-background/70 max-w-md mx-auto">
+            Premium grill, delivered in under 45 minutes.
           </p>
 
           <Button
             asChild
             size="lg"
-            className="rounded-full bg-primary hover:bg-primary/90 text-white h-12 md:h-14 px-6 md:px-10 text-base md:text-lg font-bold shadow-lg shadow-primary/30 transition-all hover:scale-105"
+            className="rounded-full bg-primary hover:bg-primary/90 text-white h-12 md:h-14 px-8 md:px-10 text-base md:text-lg font-semibold transition-all ease-apple hover:scale-[1.03] active:scale-100"
           >
             <Link href="/#menu">Place Order</Link>
           </Button>
@@ -614,21 +609,22 @@ export default function Home() {
         <motion.div
           initial={{ y: 100 }}
           animate={{ y: 0 }}
-          className="glass h-16 rounded-3xl flex items-center justify-between px-6 shadow-2xl bg-primary border-none text-white"
+          transition={{ type: 'spring', stiffness: 260, damping: 26 }}
+          className="h-16 rounded-full flex items-center justify-between pl-3 pr-6 shadow-lift bg-foreground text-background"
         >
-          <div className="flex items-center gap-3 text-black">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-              <ShoppingCart className="w-6 h-6" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white">
+              <ShoppingCart className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs font-bold opacity-80">
-                {itemCount} {itemCount === 1 ? 'ITEM' : 'ITEMS'}
+              <p className="text-[11px] font-semibold opacity-60 uppercase tracking-wide">
+                {itemCount} {itemCount === 1 ? 'item' : 'items'}
               </p>
-              <p className="font-bold">{formatNaira(subtotal)}</p>
+              <p className="font-bold leading-tight">{formatNaira(subtotal)}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-black">
-            <span className="font-bold">View Cart</span>
+          <div className="flex items-center gap-2">
+            <span className="font-semibold">View Cart</span>
             <ArrowRight className="w-5 h-5" />
           </div>
         </motion.div>
